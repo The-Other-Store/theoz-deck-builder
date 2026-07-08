@@ -1,0 +1,15 @@
+{
+  "name": "theoz",
+  "owner": {
+    "name": "The Oz",
+    "email": "info@the-oz.com",
+    "url": "https://the-oz.com"
+  },
+  "plugins": [
+    {
+      "name": "theoz-deck-builder",
+      "source": "./",
+      "description": "Genere des PowerPoint chartes The Oz (templates clair & sombre) a partir d'un plan JSON, via un moteur deterministe expose en MCP."
+    }
+  ]
+}

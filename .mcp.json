@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "theoz-deck-builder": {
+      "command": "bash",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/run.sh"],
+      "env": {
+        "OZ_OUTPUT_DIR": "${CLAUDE_PLUGIN_ROOT}/out",
+        "PYTHONPATH": "${CLAUDE_PLUGIN_ROOT}/engine"
+      }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "theoz-deck-builder",
+  "version": "0.2.0",
+  "description": "Manifeste de taches du plugin : installation des dependances et serveur MCP local.",
+  "runtime": {
+    "python": ">=3.11"
+  },
+  "tasks": {
+    "install": {
+      "description": "Installe les dependances du moteur et du serveur MCP.",
+      "command": "pip install mcp -r engine/requirements.txt"
+    },
+    "mcp-serve": {
+      "description": "Lance le serveur MCP local (stdio).",
+      "command": "OZ_OUTPUT_DIR=./out PYTHONPATH=./engine python3 mcp/server.py"
+    }
+  }
+}

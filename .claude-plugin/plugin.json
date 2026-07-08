@@ -1,0 +1,10 @@
+{
+  "name": "theoz-deck-builder",
+  "version": "0.2.0",
+  "description": "Genere des PowerPoint chartes The Oz (templates clair & sombre) a partir d'un plan JSON, via un moteur deterministe expose en MCP.",
+  "author": {
+    "name": "The Oz"
+  },
+  "keywords": ["powerpoint", "pptx", "charte", "the-oz", "deck", "brand"],
+  "mcpServers": "./.mcp.json"
+}

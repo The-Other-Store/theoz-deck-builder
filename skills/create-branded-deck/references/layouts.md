@@ -81,6 +81,8 @@ Capture a droite (via handle `register_asset`) + tuiles friction a gauche
 Rangees : icone + titre + colonnes Impact/Effort/Priorite + puces d'actions. Pour un
 plan d'actions priorise (reproduit "Recommandations prioritaires" de la charte).
 `accent:true` met l'icone et la priorite en orange. 3 a 4 items conseilles.
+Options (page 15 "04") : `number` (numero de section prefixe au titre) et `objective`
+= `{label?, body, icon?}` (ligne "Objectif global" encadree orange en bas).
 
 ## audit
 ```
@@ -92,16 +94,95 @@ plan d'actions priorise (reproduit "Recommandations prioritaires" de la charte).
 Audit complet : colonne gauche = resume executif + bandeau impact chiffre + frictions
 numerotees a badges ; colonne droite = capture. `image` via register_asset (sinon
 placeholder). Reproduit la slide "Audit CRO - Page checkout" de la charte.
+Option (page 19) : `annotations` = `[{n, x, y}]` pose des pastilles numerotees orange
+sur la capture (`x`, `y` = fractions 0-1 de la zone capture).
 
 ## closing
 `{ "layout": "closing", "headline": "The Oz - conseil e-commerce", "url": "www.the-oz.com" }`
 
-## Icones disponibles (cartes KPI)
-trending-up, bar-chart-3, line-chart, pie-chart, percent, users, circle-dollar-sign,
-search, shopping-cart, check-circle-2, alert-triangle, smartphone, mail, globe,
-clock, sparkles.
+## dashboard
+```
+{ "layout": "dashboard", "title": "Tableau de bord", "subtitle": "Indicateurs cles",
+  "meta": [ {"label": "Client", "value": "..."}, {"label": "Periode", "value": "..."} ],
+  "sections": [
+    { "heading": "Acquisition & trafic", "icon": "trending-up",
+      "headers": ["Canal", "Visites", "% total", "Conversion", "CA genere"],
+      "rows": [ ["Recherche organique", "128 544", "32,1%", "3,31%", "0,29 M"],
+                ["TOTAL", "399 883", "100%", "3,16%", "0,93 M"] ] }
+  ],
+  "tabs": ["Tableau de bord", "Acquisition", "Conversion"] }
+```
+Tableau de bord analytique facon tableur (Excel/Sheets, page 17 de la charte). Chaque
+section = bandeau sombre a icone + table dense (ferrage a droite, bandes alternees).
+Prefixe `!` sur une valeur = alerte orange ; ligne dont la 1re cellule vaut `TOTAL` =
+gras. `meta` = cartouche Client/Periode en haut a droite. `tabs` = barre d'onglets bas
+(1er actif orange). 1 a 2 sections tiennent confortablement ; les hauteurs s'adaptent.
 
-## Composer un plan
-Appeler `get_deck_schema` pour le contrat JSON complet, puis `validate_deck` avant
-`create_deck`. Structure narrative recommandee : cover -> section -> kpi/content ->
-chart/table -> tiles/capture -> closing.
+## summary
+```
+{ "layout": "summary", "number": "01", "title": "Vue d'ensemble",
+  "subtitle": "Synthese executive",
+  "blocks": [ {"heading": "Performance en hausse", "body": "..."} ],
+  "attention": { "title": "Points d'attention prioritaires",
+                 "items": ["...", "..."] } }
+```
+Page de synthese editoriale (rapport, page 15). Titre de section numerote + blocs
+(heading orange + 1er mot du body en gras) + callout `attention` encadre orange en bas
+(optionnel). `number` et `attention` sont optionnels. 2 a 4 blocs conseilles.
+
+## report-cover
+```
+{ "layout": "report-cover", "kicker": "DIAGNOSTIC E-COMMERCE",
+  "title": "Performance globale & recommandations", "subtitle": "...(opt)",
+  "client": "Client x The Oz", "date": "Octobre 2025",
+  "tagline": "Expertise, performance, croissance" }
+```
+Couverture de rapport editoriale (page 15) : titre a gauche, filet orange, client
+(orange), date, logo + tagline en bas. Variante "rapport" de `cover`. Sans pied de page.
+
+## performance
+```
+{ "layout": "performance", "number": "02", "title": "Performance globale",
+  "subtitle": "Indicateurs cles",
+  "kpis": [ {"icon": "percent", "label": "Taux de conversion", "value": "2,35%",
+             "delta": "+0,32 pt", "positive": true, "accent": true} ],
+  "headers": ["Indicateur", "Sept.", "Oct.", "Evolution"],
+  "rows": [ ["Visites", "312 544", "358 762", "+14,8%"] ] }
+```
+Composite "02 Performance globale" (page 15) : rangee de cartes KPI + tableau dessous.
+Une carte `accent:true` est rendue en FOND ORANGE plein (texte blanc). `headers`/`rows`
+optionnels (KPI seuls possibles). Alerte `!` et ligne `TOTAL` gerees comme un tableau.
+
+## analysis
+```
+{ "layout": "analysis", "number": "03", "title": "Analyse detaillee",
+  "subtitle": "Donnees cles",
+  "findings": [ {"icon": "search", "label": "Constat", "body": "..."},
+                {"icon": "triangle-alert", "label": "Impact", "body": "...", "accent": true},
+                {"icon": "circle-check-big", "label": "Recommandation", "body": "..."} ],
+  "chart": { "chart_type": "bar", "categories": ["Mai","Juin"], "series": [{"name":"CA","values":[520,560]}] },
+  "attention": { "title": "Points d'attention", "items": ["...", "..."] } }
+```
+Composite "03 Analyse detaillee" (page 15) : constats a icones (label orange + texte) a
+gauche, graphique natif a droite, callout d'attention encadre orange en bas. `chart` et
+`attention` optionnels. `accent:true` sur un finding met l'icone en orange.
+
+## Icones disponibles (cartes KPI, recommandations)
+Vraies icones Lucide (lucide.dev), contour monochrome. Liste exacte via l'outil
+`list_icons`. Catalogue actuel :
+
+- Analytics : trending-up, trending-down, chart-column, chart-line, chart-pie,
+  chart-bar, activity, gauge, target, percent
+- Commerce : shopping-cart, shopping-bag, package, truck, tag, credit-card, wallet,
+  receipt, store, gift, circle-dollar-sign
+- Clients : users, user-check, heart, star, thumbs-up, thumbs-down, message-circle
+- Communication : mail, megaphone, bell, send, share-2
+- Tech / web : smartphone, monitor, globe, wifi, search, funnel, zap, settings,
+  database, code
+- Statut / UX : circle-check-big, circle-x, triangle-alert, info, clock, calendar,
+  lock, shield, eye
+- Narratif : rocket, flag, map-pin, layers, lightbulb, refresh-cw, sparkles,
+  arrow-up-right, arrow-right
+
+Alias herites acceptes (anciens noms) : bar-chart-3, line-chart, pie-chart,
+check-circle-2, alert-triangle, filter.

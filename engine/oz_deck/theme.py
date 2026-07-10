@@ -28,7 +28,7 @@ class Brand:
     FILET      = rgb("E7E7E7")
     LINK       = rgb("6EA8C0")   # lien (slide de fin, facon charte)
 
-    FONT = "Arial"               # substitution systeme d'Helvetica (charte)
+    FONT = "Quicksand"           # charte The Oz (embarquee dans le .pptx, voir fontembed.py)
 
     # Geometrie 16:9 (pouces)
     SW = 13.333

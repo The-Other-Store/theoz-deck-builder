@@ -9,7 +9,6 @@ from __future__ import annotations
 import os
 from pptx import Presentation
 from pptx.util import Inches, Pt
-from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.chart import XL_CHART_TYPE, XL_LEGEND_POSITION
@@ -136,13 +135,27 @@ def _title(slide, title, th: Theme, subtitle=None):
               0.35, 14, Brand.ORANGE, bold=True)
 
 
-def _icon_square(slide, left, top, size, name, th: Theme, orange=False):
+_TONES = {"orange": Brand.ORANGE, "green": Brand.VERT, "vert": Brand.VERT,
+          "neutral": Brand.NOIR, "dark": Brand.NOIR}
+
+
+def _tone_fill(tone):
+    return _TONES.get((tone or "").lower())
+
+
+def _icon_square(slide, left, top, size, name, th: Theme, orange=False, fill=None):
+    """Carre-icone. `fill` (RGBColor) = carre plein colore + glyphe blanc (charte
+    semantique : orange friction, vert validation, sombre neutre)."""
     sq = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(left), Inches(top),
                                 Inches(size), Inches(size))
-    _fill(sq, th.tile_icon_bg); _round(sq, 0.15)
-    col = icons.hex_to_rgba("EC4324") if orange else icons.hex_to_rgba(th.icon_hex)
+    if fill is not None:
+        _fill(sq, fill); glyph = icons.hex_to_rgba("FFFFFF")
+    else:
+        _fill(sq, th.tile_icon_bg)
+        glyph = icons.hex_to_rgba("EC4324") if orange else icons.hex_to_rgba(th.icon_hex)
+    _round(sq, 0.15)
     icon = size * 0.6; off = (size - icon) / 2
-    slide.shapes.add_picture(icons.icon_png(name, col), Inches(left + off), Inches(top + off),
+    slide.shapes.add_picture(icons.icon_png(name, glyph), Inches(left + off), Inches(top + off),
                              Inches(icon), Inches(icon))
 
 
@@ -454,12 +467,16 @@ def _tag(slide, left, top, width, label, value, th, accent=False):
 
 def layout_recommendations(prs, c, th):
     """Rangees : icone + titre + impact/effort/priorite + actions (page 15)."""
-    s = _blank(prs); _solid_bg(s, th.bg); _title(s, c["title"], th, c.get("subtitle"))
+    number = c.get("number")
+    heading = f"{number}  {c['title']}" if number else c["title"]
+    s = _blank(prs); _solid_bg(s, th.bg); _title(s, heading, th, c.get("subtitle"))
     items = c.get("items", [])
+    objective = c.get("objective")
     top0 = 1.7 if not c.get("subtitle") else 2.05
     bottom = Brand.FOOTER_TOP - 0.2
     n = max(1, len(items)); gap = 0.22
-    rowh = (bottom - top0 - gap*(n-1)) / n
+    rows_total = n + (1 if objective else 0)
+    rowh = (bottom - top0 - gap*(rows_total-1)) / rows_total
     total_w = Brand.SW - 2*Brand.MARGIN
     y = top0
     for it in items:
@@ -469,8 +486,9 @@ def layout_recommendations(prs, c, th):
         pad = 0.28
         # icone
         isz = min(0.7, rowh * 0.5)
+        fill = _tone_fill(it.get("tone")) or (Brand.ORANGE if it.get("accent") else Brand.NOIR)
         _icon_square(s, Brand.MARGIN + pad, y + (rowh - isz)/2, isz, it.get("icon", "check-circle-2"),
-                     th, orange=it.get("accent", False))
+                     th, fill=fill)
         # titre
         title_x = Brand.MARGIN + pad + isz + 0.25
         _text(s, it.get("title", ""), title_x, y, 3.4, rowh, 13.5, th.text, bold=True, anchor=MSO_ANCHOR.MIDDLE, line_spacing=1.05)
@@ -497,6 +515,17 @@ def layout_recommendations(prs, c, th):
             r = p.add_run(); r.text = "- " + a
             r.font.size = Pt(10); r.font.name = Brand.FONT; r.font.color.rgb = th.text
         y += rowh + gap
+    if objective:
+        obj = objective if isinstance(objective, dict) else {"body": str(objective)}
+        isz = min(0.6, rowh * 0.55)
+        gy = y + (rowh - isz) / 2
+        s.shapes.add_picture(icons.icon_png(obj.get("icon", "circle-check-big"), icons.hex_to_rgba(th.icon_hex), 220),
+                             Inches(Brand.MARGIN + 0.1), Inches(gy), Inches(isz), Inches(isz))
+        lx2 = Brand.MARGIN + 0.1 + isz + 0.3
+        _text(s, obj.get("label", "Objectif global"), lx2, y, 2.7, rowh, 12.5, th.text,
+              bold=True, caps=True, anchor=MSO_ANCHOR.MIDDLE)
+        _text(s, obj.get("body", ""), lx2 + 2.8, y, total_w - (lx2 - Brand.MARGIN) - 2.8 - 0.2, rowh, 11,
+              th.text, anchor=MSO_ANCHOR.MIDDLE, line_spacing=1.1)
     return s
 
 
@@ -514,6 +543,12 @@ def layout_audit(prs, c, th):
         ph = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(right_left), Inches(top), Inches(right_w), Inches(bottom - top))
         _fill(ph, th.tile)
         _text(s, "[ CAPTURE CLIENT ]", right_left, (top + bottom)/2 - 0.2, right_w, 0.4, 12, th.text_muted, align=PP_ALIGN.CENTER)
+    # annotations numerotees posees sur la capture (x, y en fractions 0-1 de la zone)
+    for a in c.get("annotations", []):
+        dia = 0.34
+        ax = right_left + float(a.get("x", 0.5)) * right_w - dia/2
+        ay = top + float(a.get("y", 0.5)) * (bottom - top) - dia/2
+        _num_circle(s, ax, ay, dia, a.get("n", "1"), th)
     # colonne gauche
     lx = Brand.MARGIN; lw = right_left - Brand.MARGIN - 0.4
     y = top
@@ -552,7 +587,9 @@ def layout_audit(prs, c, th):
         for i, fr in enumerate(frictions):
             card = s.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(lx), Inches(y), Inches(lw), Inches(fh))
             _fill(card, th.tile); _round(card, 0.1)
-            _text(s, f"{i+1}. {fr['label']}", lx + 0.18, y, lw - 1.5, fh, 10, th.text, anchor=MSO_ANCHOR.MIDDLE, line_spacing=1.0)
+            dia = min(0.32, fh * 0.68)
+            _num_circle(s, lx + 0.18, y + (fh - dia) / 2, dia, i + 1, th)
+            _text(s, fr["label"], lx + 0.18 + dia + 0.18, y, lw - 1.5 - dia, fh, 10, th.text, anchor=MSO_ANCHOR.MIDDLE, line_spacing=1.0)
             impact = fr.get("impact", "MOYEN").upper()
             col = {"ELEVE": Brand.ORANGE, "ÉLEVÉ": Brand.ORANGE, "MOYEN": th.badge_moyen, "FAIBLE": Brand.VERT}.get(impact, th.badge_moyen)
             bh = min(0.3, fh*0.7)
@@ -577,13 +614,318 @@ def layout_closing(prs, c, th):
     return s
 
 
+def _num_circle(slide, left, top, dia, n, th, color=Brand.ORANGE):
+    """Pastille numerotee (rond plein + chiffre blanc) facon charte."""
+    c = slide.shapes.add_shape(MSO_SHAPE.OVAL, Inches(left), Inches(top), Inches(dia), Inches(dia))
+    _fill(c, color)
+    tf = c.text_frame; tf.word_wrap = False
+    tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
+    tf.vertical_anchor = MSO_ANCHOR.MIDDLE
+    p = tf.paragraphs[0]; p.alignment = PP_ALIGN.CENTER
+    r = p.add_run(); r.text = str(n)
+    r.font.size = Pt(max(7, dia * 22)); r.font.bold = True
+    r.font.name = Brand.FONT; r.font.color.rgb = Brand.BLANC
+
+
+def _bordered_box(slide, left, top, width, height, th, line_color=Brand.ORANGE, radius=0.06):
+    """Cartouche a fond tuile + contour colore (callout charte)."""
+    box = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(left), Inches(top),
+                                 Inches(width), Inches(height))
+    box.fill.solid(); box.fill.fore_color.rgb = th.tile
+    box.line.color.rgb = line_color; box.line.width = Pt(1.5)
+    _round(box, radius)
+    return box
+
+
+def _section_band(slide, left, top, width, label, icon, th, h=0.42):
+    """Bandeau de section sombre (icone + intitule) facon tableur (page 17)."""
+    bar = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(left), Inches(top), Inches(width), Inches(h))
+    _fill(bar, Brand.NOIR); _round(bar, 0.12)
+    isz = h * 0.5
+    if icon:
+        slide.shapes.add_picture(icons.icon_png(icon, icons.hex_to_rgba("EC4324"), 160),
+                                 Inches(left + 0.16), Inches(top + (h - isz) / 2), Inches(isz), Inches(isz))
+    _text(slide, label, left + (0.16 + isz + 0.14 if icon else 0.2), top, width - 0.8, h, 11,
+          Brand.BLANC, bold=True, caps=True, anchor=MSO_ANCHOR.MIDDLE)
+    return h
+
+
+def _mini_table(slide, headers, rows, left, top, width, th, row_h=0.28, font=9.0):
+    """Petit tableau dense (tableur) : bandes, ferrage a droite, alerte '!', ligne TOTAL en gras."""
+    nrows = len(rows) + 1; ncols = len(headers)
+    tbl = slide.shapes.add_table(nrows, ncols, Inches(left), Inches(top),
+                                 Inches(width), Inches(row_h * nrows)).table
+    tbl.first_row = False; tbl.horz_banding = False
+    first_frac = 0.24 if ncols > 3 else 0.34
+    tbl.columns[0].width = Inches(width * first_frac)
+    rest = Inches(width * (1 - first_frac) / max(1, ncols - 1))
+    for j in range(1, ncols):
+        tbl.columns[j].width = rest
+    for i in range(nrows):
+        tbl.rows[i].height = Inches(row_h)
+
+    def _cell(i, j, txt, bold, color, band, caps=False):
+        cell = tbl.cell(i, j)
+        cell.fill.solid(); cell.fill.fore_color.rgb = band
+        cell.vertical_anchor = MSO_ANCHOR.MIDDLE
+        cell.margin_left = cell.margin_right = Inches(0.06)
+        cell.margin_top = cell.margin_bottom = 0
+        p = cell.text_frame.paragraphs[0]
+        p.alignment = PP_ALIGN.RIGHT if j > 0 else PP_ALIGN.LEFT
+        r = p.add_run(); r.text = (str(txt).upper() if caps else str(txt))
+        r.font.size = Pt(font); r.font.name = Brand.FONT; r.font.bold = bold; r.font.color.rgb = color
+
+    for j, h in enumerate(headers):
+        _cell(0, j, h, True, Brand.BLANC, Brand.NOIR, caps=True)
+    for i, row in enumerate(rows):
+        is_total = str(row[0]).strip().upper() == "TOTAL"
+        band = th.table_body_alt if (is_total or i % 2) else th.table_body_base
+        for j, val in enumerate(row):
+            txt = str(val)
+            if txt.startswith("!"):
+                _cell(i + 1, j, txt[1:], True, Brand.ORANGE, band)
+            else:
+                _cell(i + 1, j, txt, is_total, th.table_body_text, band)
+    return row_h * nrows
+
+
+def _meta_box(slide, meta, th):
+    """Cartouche Client/Periode en haut a droite (page 17)."""
+    w = 2.7; h = 0.72; left = Brand.SW - Brand.MARGIN - w; top = Brand.TITLE_TOP - 0.02
+    _bordered_box(slide, left, top, w, h, th, line_color=th.text_muted, radius=0.12)
+    n = max(1, len(meta)); per = h / n
+    for i, m in enumerate(meta):
+        y = top + i * per
+        _text(slide, m.get("label", ""), left + 0.16, y, 0.95, per, 8.5, th.text_muted, caps=True, anchor=MSO_ANCHOR.MIDDLE)
+        _text(slide, m.get("value", ""), left + 1.05, y, w - 1.2, per, 9.5, th.text, bold=True, anchor=MSO_ANCHOR.MIDDLE)
+
+
+def _tabs(slide, tabs, left, top, width, th):
+    """Barre d'onglets facon tableur : premier actif (orange), autres discrets."""
+    x = left; h = 0.32; gap = 0.12
+    for i, t in enumerate(tabs):
+        w = 0.105 * len(t) + 0.34
+        if x + w > left + width:
+            break
+        pill = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(x), Inches(top), Inches(w), Inches(h))
+        if i == 0:
+            _fill(pill, Brand.ORANGE); tcol = Brand.BLANC
+        else:
+            pill.fill.solid(); pill.fill.fore_color.rgb = th.tile
+            pill.line.color.rgb = th.text_muted; pill.line.width = Pt(0.75); tcol = th.text_muted
+        _round(pill, 0.5)
+        tf = pill.text_frame; tf.word_wrap = False
+        tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
+        tf.vertical_anchor = MSO_ANCHOR.MIDDLE
+        p = tf.paragraphs[0]; p.alignment = PP_ALIGN.CENTER
+        r = p.add_run(); r.text = t.upper()
+        r.font.size = Pt(8.5); r.font.bold = (i == 0); r.font.name = Brand.FONT; r.font.color.rgb = tcol
+        x += w + gap
+
+
+def layout_dashboard(prs, c, th):
+    """Tableau de bord analytique facon tableur (page 17) : sections a bandeau + tables denses."""
+    s = _blank(prs); _solid_bg(s, th.bg); _title(s, c["title"], th, c.get("subtitle"))
+    if c.get("meta"):
+        _meta_box(s, c["meta"], th)
+    sections = c.get("sections", [])
+    tabs = c.get("tabs", [])
+    top0 = 1.75
+    bottom = Brand.FOOTER_TOP - (0.5 if tabs else 0.15)
+    # Repartition verticale adaptative.
+    band_h = 0.4; band_gap = 0.12; sec_gap = 0.28
+    total_datarows = sum(len(sec.get("rows", [])) + 1 for sec in sections) or 1
+    fixed = len(sections) * (band_h + band_gap) + max(0, len(sections) - 1) * sec_gap
+    row_h = min(0.3, (bottom - top0 - fixed) / total_datarows)
+    row_h = max(0.2, row_h)
+    total_w = Brand.SW - 2 * Brand.MARGIN
+    y = top0
+    for sec in sections:
+        _section_band(s, Brand.MARGIN, y, total_w, sec.get("heading", ""), sec.get("icon"), th, h=band_h)
+        y += band_h + band_gap
+        used = _mini_table(s, sec.get("headers", []), sec.get("rows", []),
+                           Brand.MARGIN, y, total_w, th, row_h=row_h)
+        y += used + sec_gap
+    if tabs:
+        _tabs(s, tabs, Brand.MARGIN, Brand.FOOTER_TOP - 0.45, total_w, th)
+    return s
+
+
+def layout_summary(prs, c, th):
+    """Synthese executive editoriale (page 15) : section numerotee + blocs + callout d'attention."""
+    number = c.get("number")
+    heading = f"{number}  {c['title']}" if number else c["title"]
+    s = _blank(prs); _solid_bg(s, th.bg); _title(s, heading, th, c.get("subtitle"))
+    top0 = 2.05 if c.get("subtitle") else 1.85
+    bottom = Brand.FOOTER_TOP - 0.2
+    att = c.get("attention")
+    att_h = 0.0
+    if att:
+        items = att.get("items", [])
+        att_h = 0.62 + 0.28 * max(1, len(items))
+    blocks = c.get("blocks", [])
+    area_bottom = bottom - (att_h + 0.3 if att else 0)
+    n = max(1, len(blocks)); per = (area_bottom - top0) / n
+    y = top0
+    for b in blocks:
+        _text(s, b["heading"], Brand.MARGIN, y, Brand.SW - 2 * Brand.MARGIN, 0.36, 14, Brand.ORANGE, bold=True)
+        box = s.shapes.add_textbox(Inches(Brand.MARGIN), Inches(y + 0.4),
+                                   Inches(Brand.SW - 2 * Brand.MARGIN), Inches(per - 0.45))
+        tf = box.text_frame; tf.word_wrap = True
+        tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
+        p = tf.paragraphs[0]; p.line_spacing = 1.35
+        _first_word_bold(p, b["body"], 12.5, th.text)
+        y += per
+    if att:
+        ay = bottom - att_h
+        _bordered_box(s, Brand.MARGIN, ay, Brand.SW - 2 * Brand.MARGIN, att_h, th, line_color=Brand.ORANGE, radius=0.05)
+        _text(s, att.get("title", "Points d'attention prioritaires"), Brand.MARGIN + 0.3, ay + 0.14,
+              Brand.SW - 2 * Brand.MARGIN - 0.6, 0.32, 12, Brand.ORANGE, bold=True, caps=True)
+        box = s.shapes.add_textbox(Inches(Brand.MARGIN + 0.3), Inches(ay + 0.52),
+                                   Inches(Brand.SW - 2 * Brand.MARGIN - 0.6), Inches(att_h - 0.62))
+        tf = box.text_frame; tf.word_wrap = True
+        tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
+        for j, it in enumerate(att.get("items", [])):
+            p = tf.paragraphs[0] if j == 0 else tf.add_paragraph()
+            p.line_spacing = 1.15
+            r = p.add_run(); r.text = "- " + it
+            r.font.size = Pt(11); r.font.name = Brand.FONT; r.font.color.rgb = th.text
+    return s
+
+
+def layout_report_cover(prs, c, th):
+    """Couverture de rapport editoriale (page 15) : titre a gauche, client, date, logo + tagline."""
+    s = _blank(prs); _gradient_bg(s, th.bg_grad_a, th.bg_grad_b)
+    if c.get("kicker"):
+        _text(s, c["kicker"], Brand.MARGIN, 1.4, 10, 0.4, 13, th.text_muted, caps=True)
+    _text(s, c["title"], Brand.MARGIN, 1.85, 10.5, 1.7, 42, th.text, bold=True, caps=True, line_spacing=1.05)
+    yb = 3.55
+    if c.get("subtitle"):
+        _text(s, c["subtitle"], Brand.MARGIN, yb, 10, 0.7, 20, th.text if th.on_dark else th.text_muted, line_spacing=1.1)
+        yb += 0.85
+    bar = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(Brand.MARGIN), Inches(yb), Inches(0.5), Pt(3))
+    _fill(bar, Brand.ORANGE)
+    yb += 0.22
+    if c.get("client"):
+        _text(s, c["client"], Brand.MARGIN, yb, 10, 0.35, 13, Brand.ORANGE, bold=True, caps=True)
+        yb += 0.4
+    if c.get("date"):
+        _text(s, c["date"], Brand.MARGIN, yb, 10, 0.35, 12, th.text_muted, caps=True)
+    # logo + tagline en bas a gauche
+    _logo(s, Brand.MARGIN, Brand.SH - 1.55, 0.62, th, "secondaire")
+    _text(s, "AGENCE SHOPIFY", Brand.MARGIN, Brand.SH - 0.85, 8, 0.3, 11, th.text, bold=True, caps=True)
+    _text(s, c.get("tagline", "Expertise, performance, croissance"), Brand.MARGIN, Brand.SH - 0.58, 8, 0.3, 9,
+          th.text_muted, caps=True)
+    return s
+
+
+def _perf_card(slide, left, top, w, h, k, th):
+    """Carte KPI compacte ; carte 'accent' = fond orange plein (page 15 '02')."""
+    accent = k.get("accent", False)
+    card = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(left), Inches(top), Inches(w), Inches(h))
+    if accent:
+        _fill(card, Brand.ORANGE); _round(card)
+        txt = Brand.BLANC; lab = Brand.BLANC; icon_hex = "FFFFFF"
+    else:
+        _fill(card, th.tile); _round(card)
+        txt = th.text; lab = th.text_muted; icon_hex = th.icon_hex
+    pad = 0.24; isz = 0.42
+    slide.shapes.add_picture(icons.icon_png(k.get("icon", "bar-chart-3"), icons.hex_to_rgba(icon_hex), 170),
+                             Inches(left + pad), Inches(top + pad), Inches(isz), Inches(isz))
+    _text(slide, k.get("label", ""), left + pad, top + 0.76, w - 2 * pad, 0.4, 9.5, lab, caps=True, line_spacing=1.05)
+    _text(slide, k.get("value", ""), left + pad, top + 1.06, w - 2 * pad, 0.55, 22, txt, bold=True)
+    if k.get("delta"):
+        pos = k.get("positive", True)
+        dcol = Brand.BLANC if accent else (Brand.VERT if pos else Brand.ORANGE)
+        _text(slide, k["delta"], left + pad, top + h - 0.42, w - 2 * pad, 0.32, 11.5, dcol, bold=True)
+
+
+def layout_performance(prs, c, th):
+    """Indicateurs cles : rangee de cartes KPI + tableau (page 15 '02 Performance globale')."""
+    number = c.get("number")
+    heading = f"{number}  {c['title']}" if number else c["title"]
+    s = _blank(prs); _solid_bg(s, th.bg); _title(s, heading, th, c.get("subtitle"))
+    top0 = 2.0 if c.get("subtitle") else 1.8
+    total_w = Brand.SW - 2 * Brand.MARGIN
+    y = top0
+    kpis = c.get("kpis", [])
+    if kpis:
+        ch = 1.9; gap = 0.3; n = len(kpis)
+        cw = (total_w - gap * (n - 1)) / n
+        for i, k in enumerate(kpis):
+            _perf_card(s, Brand.MARGIN + i * (cw + gap), top0, cw, ch, k, th)
+        y = top0 + ch + 0.35
+    if c.get("headers") and c.get("rows") is not None:
+        rows = c["rows"]
+        row_h = min(0.34, (Brand.FOOTER_TOP - 0.2 - y) / max(1, len(rows) + 1))
+        _mini_table(s, c["headers"], rows, Brand.MARGIN, y, total_w, th, row_h=max(0.24, row_h), font=9.5)
+    return s
+
+
+def layout_analysis(prs, c, th):
+    """Analyse detaillee (page 15 '03') : constats a icones (gauche) + graphique (droite) + callout."""
+    number = c.get("number")
+    heading = f"{number}  {c['title']}" if number else c["title"]
+    s = _blank(prs); _solid_bg(s, th.bg); _title(s, heading, th, c.get("subtitle"))
+    top0 = 2.0 if c.get("subtitle") else 1.8
+    bottom = Brand.FOOTER_TOP - 0.2
+    att = c.get("attention"); att_h = 0.0
+    if att:
+        att_h = 0.6 + 0.28 * max(1, len(att.get("items", [])))
+    body_bottom = bottom - (att_h + 0.28 if att else 0)
+    gutter = 0.5
+    left_w = (Brand.SW - 2 * Brand.MARGIN) * 0.42
+    right_x = Brand.MARGIN + left_w + gutter
+    right_w = Brand.SW - Brand.MARGIN - right_x
+    # colonne gauche : bandeau executive summary + constats a icones
+    _section_band(s, Brand.MARGIN, top0, left_w, c.get("summary_label", "Executive summary"), None, th, h=0.4)
+    fy0 = top0 + 0.4 + 0.2
+    findings = c.get("findings", [])
+    n = max(1, len(findings)); per = (body_bottom - fy0) / n
+    y = fy0
+    for f in findings:
+        isz = min(0.5, per * 0.42)
+        fill = _tone_fill(f.get("tone")) or (Brand.ORANGE if f.get("accent") else Brand.NOIR)
+        _icon_square(s, Brand.MARGIN, y, isz, f.get("icon", "search"), th, fill=fill)
+        _text(s, f.get("label", ""), Brand.MARGIN + isz + 0.18, y, left_w - isz - 0.18, 0.3, 11,
+              Brand.ORANGE, bold=True, caps=True)
+        box = s.shapes.add_textbox(Inches(Brand.MARGIN + isz + 0.18), Inches(y + 0.3),
+                                   Inches(left_w - isz - 0.18), Inches(per - 0.4))
+        tf = box.text_frame; tf.word_wrap = True
+        tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
+        p = tf.paragraphs[0]; p.line_spacing = 1.25
+        _first_word_bold(p, f.get("body", ""), 10.5, th.text)
+        y += per
+    # colonne droite : graphique
+    if c.get("chart"):
+        _chart_in(s, c["chart"], right_x, top0, right_w, body_bottom - top0, th)
+    # callout d'attention
+    if att:
+        ay = bottom - att_h
+        _bordered_box(s, Brand.MARGIN, ay, Brand.SW - 2 * Brand.MARGIN, att_h, th, line_color=Brand.ORANGE, radius=0.05)
+        _text(s, att.get("title", "Points d'attention prioritaires"), Brand.MARGIN + 0.3, ay + 0.13,
+              Brand.SW - 2 * Brand.MARGIN - 0.6, 0.3, 12, Brand.ORANGE, bold=True, caps=True)
+        box = s.shapes.add_textbox(Inches(Brand.MARGIN + 0.3), Inches(ay + 0.5),
+                                   Inches(Brand.SW - 2 * Brand.MARGIN - 0.6), Inches(att_h - 0.58))
+        tf = box.text_frame; tf.word_wrap = True
+        tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
+        for j, it in enumerate(att.get("items", [])):
+            p = tf.paragraphs[0] if j == 0 else tf.add_paragraph()
+            p.line_spacing = 1.15
+            r = p.add_run(); r.text = "- " + it
+            r.font.size = Pt(11); r.font.name = Brand.FONT; r.font.color.rgb = th.text
+    return s
+
+
 LAYOUTS = {
     "cover": layout_cover, "section": layout_section, "content": layout_content,
     "tiles": layout_tiles, "grid": layout_grid, "kpi": layout_kpi, "table": layout_table,
     "chart": layout_chart, "split": layout_split, "capture": layout_capture,
     "recommendations": layout_recommendations, "audit": layout_audit, "closing": layout_closing,
+    "dashboard": layout_dashboard, "summary": layout_summary, "report-cover": layout_report_cover,
+    "performance": layout_performance, "analysis": layout_analysis,
 }
-_NO_PAGE = {"cover", "closing"}
+_NO_PAGE = {"cover", "closing", "report-cover"}
 
 
 def build(schema: dict, output_path: str) -> str:
@@ -605,4 +947,27 @@ def build(schema: dict, output_path: str) -> str:
         else:
             _footer(s, slide_theme, page_no=idx, total=total)
     prs.save(output_path)
+    _embed_charter_font(output_path)
     return output_path
+
+
+_FONT_DIR = os.path.join(_ASSETS_DIR, "fonts")
+
+
+def _embed_charter_font(output_path: str) -> None:
+    """Embarque Quicksand (Regular + Bold) dans le .pptx si les fontes sont la.
+
+    Garantit l'affichage de la charte chez un destinataire qui n'a pas la police
+    installee. Silencieux si les .ttf sont absents ou si l'embarquement echoue :
+    le deck reste valide (PowerPoint substituera comme avant)."""
+    reg = os.path.join(_FONT_DIR, "Quicksand-Regular.ttf")
+    bold = os.path.join(_FONT_DIR, "Quicksand-Bold.ttf")
+    if not (os.path.exists(reg) and os.path.exists(bold)):
+        return
+    try:
+        from . import fontembed
+        fontembed.embed_fonts(output_path, [
+            {"typeface": Brand.FONT, "regular": reg, "bold": bold},
+        ])
+    except Exception:
+        pass

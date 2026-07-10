@@ -20,9 +20,14 @@ LAYOUT_CATALOG = [
     {"layout": "chart", "usage": "Graphique natif editable. Champs: title, chart_type(bar|line|pie), categories[], series[{name, values[]}]"},
     {"layout": "split", "usage": "Deux colonnes : visuel (graphique/image) + texte (blocs ou cartes). Champs: title, ratio(half|third|two-thirds)?, swap?, left{chart{...}|image}, right{blocks[]|cards[]}"},
     {"layout": "capture", "usage": "Audit simple: capture a droite + tuiles friction a gauche. Champs: title, image?, frictions[{label, impact(ELEVE|MOYEN|FAIBLE)}]"},
-    {"layout": "recommendations", "usage": "Recommandations prioritaires : rangees icone + titre + impact/effort/priorite + actions. Champs: title, subtitle?, items[{icon, title, impact, effort, priority, actions[], accent?}]"},
+    {"layout": "recommendations", "usage": "Recommandations prioritaires : rangees icone + titre + impact/effort/priorite + actions, + ligne 'objectif global' optionnelle. Champs: number?, title, subtitle?, items[{icon, title, impact, effort, priority, actions[], accent?}], objective{label?, body, icon?}?"},
     {"layout": "audit", "usage": "Audit CRO complet : resume executif + bandeau impact chiffre + frictions a gauche, capture a droite. Champs: title, subtitle?, image?, summary?, impact[{label, value}], frictions[{label, impact}]"},
     {"layout": "closing", "usage": "Slide de fin. Champs: headline?, url?"},
+    {"layout": "dashboard", "usage": "Tableau de bord analytique facon tableur (Excel/Sheets). Sections a bandeau sombre + tables denses. Prefixe '!' = alerte orange ; ligne dont 1re cellule vaut TOTAL = gras. Champs: title, subtitle?, meta[{label, value}]?, sections[{heading, icon?, headers[], rows[[]]}], tabs[]?"},
+    {"layout": "summary", "usage": "Synthese executive editoriale (page de rapport). Section numerotee + blocs (1er mot en gras) + callout d'attention encadre orange. Champs: number?, title, subtitle?, blocks[{heading, body}], attention{title?, items[]}?"},
+    {"layout": "report-cover", "usage": "Couverture de rapport editoriale (titre a gauche, client, date, logo + tagline). Champs: kicker?, title, subtitle?, client?, date?, tagline?"},
+    {"layout": "performance", "usage": "Indicateurs cles : rangee de cartes KPI (carte accent = fond orange plein) + tableau (page 15 '02'). Champs: number?, title, subtitle?, kpis[{icon, label, value, delta?, positive?, accent?}], headers[]?, rows[[]]?"},
+    {"layout": "analysis", "usage": "Analyse detaillee (page 15 '03') : constats a icones (label + texte) a gauche, graphique a droite, callout d'attention en bas. Champs: number?, title, subtitle?, findings[{icon, label, body, accent?}], chart{chart_type, categories[], series[]}?, attention{title?, items[]}?"},
 ]
 
 THEMES = ["dark", "light"]
@@ -63,6 +68,16 @@ DECK_SCHEMA = {
                  "then": {"required": ["title", "headers", "rows"]}},
                 {"if": {"properties": {"layout": {"const": "chart"}}},
                  "then": {"required": ["title", "categories", "series"]}},
+                {"if": {"properties": {"layout": {"const": "dashboard"}}},
+                 "then": {"required": ["title", "sections"]}},
+                {"if": {"properties": {"layout": {"const": "summary"}}},
+                 "then": {"required": ["title", "blocks"]}},
+                {"if": {"properties": {"layout": {"const": "report-cover"}}},
+                 "then": {"required": ["title"]}},
+                {"if": {"properties": {"layout": {"const": "performance"}}},
+                 "then": {"required": ["title", "kpis"]}},
+                {"if": {"properties": {"layout": {"const": "analysis"}}},
+                 "then": {"required": ["title", "findings"]}},
             ],
         },
     },
@@ -74,6 +89,8 @@ _REQUIRED = {
     "table": ["title", "headers", "rows"], "chart": ["title", "categories", "series"],
     "split": ["title", "left", "right"], "capture": ["title"],
     "recommendations": ["title", "items"], "audit": ["title"], "closing": [],
+    "dashboard": ["title", "sections"], "summary": ["title", "blocks"],
+    "report-cover": ["title"], "performance": ["title", "kpis"], "analysis": ["title", "findings"],
 }
 _VALID_LAYOUTS = set(_REQUIRED)
 
@@ -109,4 +126,12 @@ def validate(schema: dict) -> list[dict]:
             for j, ser in enumerate(sl.get("series", [])):
                 if "values" not in ser:
                     errors.append({"path": f"{p}.series[{j}].values", "error": "valeurs manquantes"})
+        if layout == "dashboard":
+            secs = sl.get("sections")
+            if not isinstance(secs, list) or not secs:
+                errors.append({"path": f"{p}.sections", "error": "au moins une section requise"})
+            else:
+                for j, sec in enumerate(secs):
+                    if not sec.get("headers") or not isinstance(sec.get("rows"), list):
+                        errors.append({"path": f"{p}.sections[{j}]", "error": "section : 'headers' et 'rows' requis"})
     return errors

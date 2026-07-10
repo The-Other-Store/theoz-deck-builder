@@ -1,5 +1,6 @@
 out/
 *.pptx
+!engine/oz_deck/assets/oz_template*.pptx
 *.pdf
 __pycache__/
 *.pyc

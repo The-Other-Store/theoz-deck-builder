@@ -91,5 +91,5 @@ Notes :
 
 ## Details des layouts et exemples
 
-Voir `references/layouts.md` pour le detail de chaque layout et la marche a suivre
-pour composer un plan (contrat via `get_deck_schema`, validation via `validate_deck`).
+Voir `references/layouts.md` pour le detail de chaque layout et des exemples de plan
+complets (analyse e-commerce, diagnostic). Contrat via `get_deck_schema`, validation via `validate_deck`.

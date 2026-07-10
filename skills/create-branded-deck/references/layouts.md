@@ -186,3 +186,4 @@ Vraies icones Lucide (lucide.dev), contour monochrome. Liste exacte via l'outil
 
 Alias herites acceptes (anciens noms) : bar-chart-3, line-chart, pie-chart,
 check-circle-2, alert-triangle, filter.
+

@@ -18,6 +18,13 @@ from .theme import Brand, Theme, get_theme
 from . import icons
 
 
+# Mode de rendu. master=True quand on rend SUR un template brande (oz_template_<theme>)
+# : fond / pied / logo / barre de titre sont HERITES du masque, le titre va dans le
+# placeholder natif. master=False = rendu legacy (le moteur dessine tout lui-meme).
+_RENDER = {"master": False}
+_CONTENT_LAYOUT = "OZ - Titre seul"   # disposition support des slides de contenu
+
+
 # ----------------------------- helpers -----------------------------
 
 def _no_line(shape):
@@ -66,6 +73,19 @@ def _first_word_bold(p, text, size, color):
 
 
 def _gradient_bg(slide, c1, c2, angle=45):
+    # En mode masque : rectangle plein ecran (couvre le masque -> aspect cover/section).
+    if _RENDER["master"]:
+        rect = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0), Inches(0),
+                                      Inches(Brand.SW), Inches(Brand.SH))
+        f = rect.fill; f.gradient()
+        try:
+            f.gradient_stops[0].position = 0.0; f.gradient_stops[0].color.rgb = c1
+            f.gradient_stops[1].position = 1.0; f.gradient_stops[1].color.rgb = c2
+            f.gradient_angle = angle
+        except Exception:
+            pass
+        _no_line(rect)
+        return
     fill = slide.background.fill
     fill.gradient()
     fill.gradient_stops[0].position = 0.0
@@ -79,6 +99,8 @@ def _gradient_bg(slide, c1, c2, angle=45):
 
 
 def _solid_bg(slide, color):
+    if _RENDER["master"]:
+        return  # fond herite du masque brande
     slide.background.fill.solid()
     slide.background.fill.fore_color.rgb = color
 
@@ -119,6 +141,14 @@ def _footer(slide, th: Theme, page_no=None, total=None):
 
 
 def _title(slide, title, th: Theme, subtitle=None):
+    # Mode masque : le titre va dans le placeholder NATIF (deja style charte + barre
+    # orange heritee du masque). Le sous-titre reste dessine (petit label orange).
+    if _RENDER["master"] and getattr(slide.shapes, "title", None) is not None:
+        slide.shapes.title.text = title
+        if subtitle:
+            _text(slide, subtitle, Brand.MARGIN + 0.22, 1.18, Brand.SW - 2 * Brand.MARGIN, 0.35,
+                  14, Brand.ORANGE, bold=True)
+        return
     # Charte : H1 Helvetica Bold 24pt capitales. Barre verticale orange (5px)
     # alignee sur la hauteur des capitales du titre, centree verticalement.
     box_h = 0.5
@@ -179,6 +209,10 @@ def _tile(slide, left, top, width, height, th: Theme, heading=None, body=None):
 # ----------------------------- layouts -----------------------------
 
 def _blank(prs):
+    if _RENDER["master"]:
+        for L in prs.slide_masters[0].slide_layouts:
+            if L.name == _CONTENT_LAYOUT:
+                return prs.slides.add_slide(L)
     return prs.slides.add_slide(prs.slide_layouts[6])
 
 
@@ -928,25 +962,50 @@ LAYOUTS = {
 _NO_PAGE = {"cover", "closing", "report-cover"}
 
 
-def build(schema: dict, output_path: str) -> str:
-    """Point d'entree : schema dict -> fichier .pptx charte."""
+_OZ_TEMPLATE = os.path.join(_ASSETS_DIR, "oz_template.pptx")
+
+
+def build(schema: dict, output_path: str, template: str | None = None) -> str:
+    """Point d'entree : schema dict -> fichier .pptx charte.
+
+    Si un template est fourni (ou si oz_template.pptx est present), le deck herite
+    de son THEME (police Quicksand + palette OZ) - utile a l'edition PowerPoint.
+    Le rendu du contenu reste identique (fonds/pieds dessines par le moteur)."""
     th = get_theme(schema.get("theme"))
-    prs = Presentation()
-    prs.slide_width = Inches(Brand.SW); prs.slide_height = Inches(Brand.SH)
-    slides = schema.get("slides", [])
-    total = len(slides)
-    for idx, sl in enumerate(slides, start=1):
-        layout = sl.get("layout")
-        fn = LAYOUTS.get(layout)
-        if fn is None:
-            raise ValueError(f"Layout inconnu : {layout!r}")
-        slide_theme = get_theme(sl.get("theme")) if sl.get("theme") else th
-        s = fn(prs, sl, slide_theme)
-        if layout in _NO_PAGE:
-            _footer(s, slide_theme)
-        else:
-            _footer(s, slide_theme, page_no=idx, total=total)
-    prs.save(output_path)
+    theme_name = (schema.get("theme") or "dark").lower()
+    if theme_name not in ("dark", "light"):
+        theme_name = "dark"
+    branded = os.path.join(_ASSETS_DIR, f"oz_template_{theme_name}.pptx")
+    if template:                                   # template explicite : mode legacy
+        tpl, master = template, False
+    elif os.path.exists(branded):                  # template brande -> mode masque
+        tpl, master = branded, True
+    elif os.path.exists(_OZ_TEMPLATE):             # theme-only -> legacy sur theme OZ
+        tpl, master = _OZ_TEMPLATE, False
+    else:
+        tpl, master = None, False
+    _RENDER["master"] = master
+    try:
+        prs = Presentation(tpl) if tpl else Presentation()
+        prs.slide_width = Inches(Brand.SW); prs.slide_height = Inches(Brand.SH)
+        slides = schema.get("slides", [])
+        total = len(slides)
+        for idx, sl in enumerate(slides, start=1):
+            layout = sl.get("layout")
+            fn = LAYOUTS.get(layout)
+            if fn is None:
+                raise ValueError(f"Layout inconnu : {layout!r}")
+            # En mode masque, le theme est celui du template (pas de surcharge par slide).
+            slide_theme = th if master else (get_theme(sl.get("theme")) if sl.get("theme") else th)
+            s = fn(prs, sl, slide_theme)
+            if not master:                         # pied dessine seulement en legacy
+                if layout in _NO_PAGE:
+                    _footer(s, slide_theme)
+                else:
+                    _footer(s, slide_theme, page_no=idx, total=total)
+        prs.save(output_path)
+    finally:
+        _RENDER["master"] = False
     _embed_charter_font(output_path)
     return output_path
 

@@ -1,0 +1,187 @@
+{
+  "slides": [
+    {
+      "layout": "cover",
+      "title": "Audit de conversion - Atelier Boreal",
+      "subtitle": "Donnees fictives de demonstration. Exemple de deck genere par le moteur The Oz."
+    },
+    {
+      "layout": "section",
+      "number": "01",
+      "title": "Ce que nous avons observe"
+    },
+    {
+      "layout": "content",
+      "title": "Constat general",
+      "blocks": [
+        {
+          "heading": "Trafic sain",
+          "body": "L'acquisition est reguliere et diversifiee, sans dependance a une seule source."
+        },
+        {
+          "heading": "Conversion sous le marche",
+          "body": "Le taux de transformation reste inferieur de moitie a la mediane du secteur."
+        },
+        {
+          "heading": "Friction mobile",
+          "body": "L'essentiel des abandons se concentre sur le paiement mobile."
+        }
+      ]
+    },
+    {
+      "layout": "grid",
+      "title": "Points de friction releves",
+      "intro": "Six points prioritaires identifies au fil du parcours d'achat.",
+      "items": [
+        {
+          "heading": "Compte obligatoire",
+          "body": "La creation de compte est imposee avant le paiement."
+        },
+        {
+          "heading": "Frais tardifs",
+          "body": "Les frais de port n'apparaissent qu'a la derniere etape."
+        },
+        {
+          "heading": "Recherche faible",
+          "body": "Le moteur interne ne gere ni fautes ni synonymes."
+        },
+        {
+          "heading": "Fiches pauvres",
+          "body": "Peu de visuels et pas de guide des tailles."
+        },
+        {
+          "heading": "Paiement limite",
+          "body": "Absence de paiement en plusieurs fois et de wallet mobile."
+        },
+        {
+          "heading": "Confiance",
+          "body": "Avis clients peu visibles sur les pages produit."
+        }
+      ]
+    },
+    {
+      "layout": "audit",
+      "title": "Synthese de l'audit",
+      "summary": "En levant les frictions du tunnel, un gain de conversion de l'ordre de 20 a 30% est atteignable a trafic constant.",
+      "impact": [
+        {
+          "label": "Conversion visee",
+          "value": "+25%"
+        },
+        {
+          "label": "Abandons paiement",
+          "value": "-18 pts"
+        },
+        {
+          "label": "Delai de mise en oeuvre",
+          "value": "6 sem."
+        }
+      ],
+      "frictions": [
+        {
+          "label": "Compte obligatoire au paiement"
+        },
+        {
+          "label": "Frais de port reveles tardivement"
+        },
+        {
+          "label": "Recherche interne imprecise"
+        },
+        {
+          "label": "Avis clients peu visibles"
+        }
+      ]
+    },
+    {
+      "layout": "recommendations",
+      "title": "Nos recommandations",
+      "items": [
+        {
+          "icon": "shopping-cart",
+          "title": "Paiement invite",
+          "impact": "Eleve",
+          "effort": "Faible",
+          "priority": "P1",
+          "actions": [
+            "Autoriser l'achat sans compte",
+            "Proposer la creation apres commande"
+          ],
+          "accent": true
+        },
+        {
+          "icon": "circle-dollar-sign",
+          "title": "Transparence des frais",
+          "impact": "Eleve",
+          "effort": "Faible",
+          "priority": "P1",
+          "actions": [
+            "Afficher les frais des le panier",
+            "Ajouter un seuil de franco"
+          ]
+        },
+        {
+          "icon": "search",
+          "title": "Recherche tolerante",
+          "impact": "Moyen",
+          "effort": "Moyen",
+          "priority": "P2",
+          "actions": [
+            "Gerer fautes et synonymes",
+            "Afficher des suggestions"
+          ]
+        },
+        {
+          "icon": "smartphone",
+          "title": "Wallets mobiles",
+          "impact": "Moyen",
+          "effort": "Moyen",
+          "priority": "P2",
+          "actions": [
+            "Activer les paiements express",
+            "Ajouter le paiement fractionne"
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "table",
+      "title": "Feuille de route",
+      "headers": [
+        "Chantier",
+        "Priorite",
+        "Effort",
+        "Gain estime"
+      ],
+      "rows": [
+        [
+          "Paiement invite",
+          "P1",
+          "Faible",
+          "+8 a 12%"
+        ],
+        [
+          "Transparence frais",
+          "P1",
+          "Faible",
+          "+5 a 8%"
+        ],
+        [
+          "Recherche interne",
+          "P2",
+          "Moyen",
+          "+3 a 5%"
+        ],
+        [
+          "Wallets mobiles",
+          "P2",
+          "Moyen",
+          "+2 a 4%"
+        ]
+      ]
+    },
+    {
+      "layout": "closing",
+      "url": "the-oz.com"
+    }
+  ]
+}

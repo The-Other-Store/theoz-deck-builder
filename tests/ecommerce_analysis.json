@@ -1,0 +1,181 @@
+{
+  "slides": [
+    {
+      "layout": "cover",
+      "title": "Revue de performance - Studio Meridian",
+      "subtitle": "Donnees fictives de demonstration. Exemple de deck genere par le moteur The Oz."
+    },
+    {
+      "layout": "kpi",
+      "title": "Les chiffres du trimestre",
+      "kpis": [
+        {
+          "icon": "circle-dollar-sign",
+          "label": "Chiffre d'affaires",
+          "value": "1,4 M",
+          "delta": "+18%",
+          "positive": true
+        },
+        {
+          "icon": "shopping-cart",
+          "label": "Commandes",
+          "value": "9 200",
+          "delta": "+12%",
+          "positive": true
+        },
+        {
+          "icon": "percent",
+          "label": "Taux de conversion",
+          "value": "2,1%",
+          "delta": "-0,3 pt",
+          "positive": false
+        },
+        {
+          "icon": "trending-up",
+          "label": "Panier moyen",
+          "value": "152 €",
+          "delta": "+6%",
+          "positive": true,
+          "accent": true
+        }
+      ]
+    },
+    {
+      "layout": "chart",
+      "title": "Evolution du chiffre d'affaires",
+      "chart_type": "bar",
+      "categories": [
+        "Jan",
+        "Fev",
+        "Mar",
+        "Avr",
+        "Mai",
+        "Juin"
+      ],
+      "series": [
+        {
+          "name": "2025",
+          "values": [
+            180,
+            195,
+            210,
+            205,
+            230,
+            245
+          ]
+        },
+        {
+          "name": "2026",
+          "values": [
+            210,
+            225,
+            250,
+            248,
+            272,
+            290
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "chart",
+      "title": "Origine du trafic (part des sessions)",
+      "chart_type": "bar",
+      "categories": [
+        "Direct",
+        "SEO",
+        "Ads",
+        "Reseaux",
+        "Email"
+      ],
+      "series": [
+        {
+          "name": "Sessions %",
+          "values": [
+            32,
+            28,
+            20,
+            12,
+            8
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "tiles",
+      "title": "Ce qui marche",
+      "tiles": [
+        {
+          "heading": "Acquisition SEO",
+          "body": "Le trafic organique progresse de 24% et devient la 2e source de sessions."
+        },
+        {
+          "heading": "Fidelisation",
+          "body": "Un tiers du chiffre provient de clients recurrents, en hausse continue."
+        },
+        {
+          "heading": "Mobile",
+          "body": "Le mobile represente 68% des sessions, avec un parcours d'achat fluidifie."
+        }
+      ]
+    },
+    {
+      "layout": "table",
+      "title": "Top categories",
+      "headers": [
+        "Categorie",
+        "CA",
+        "Part",
+        "Evolution"
+      ],
+      "rows": [
+        [
+          "Pret-a-porter",
+          "620 k",
+          "44%",
+          "+15%"
+        ],
+        [
+          "Accessoires",
+          "310 k",
+          "22%",
+          "+21%"
+        ],
+        [
+          "Chaussures",
+          "280 k",
+          "20%",
+          "!-4%"
+        ],
+        [
+          "Maroquinerie",
+          "190 k",
+          "14%",
+          "+9%"
+        ]
+      ]
+    },
+    {
+      "layout": "content",
+      "title": "Notre lecture",
+      "blocks": [
+        {
+          "heading": "Acquisition solide",
+          "body": "Le SEO compense la hausse du cout des campagnes payantes."
+        },
+        {
+          "heading": "Conversion a surveiller",
+          "body": "Le taux recule legerement malgre un trafic en hausse : friction probable au paiement."
+        },
+        {
+          "heading": "Levier chaussures",
+          "body": "Seule categorie en repli : opportunite de relance ciblee."
+        }
+      ]
+    },
+    {
+      "layout": "closing",
+      "url": "the-oz.com"
+    }
+  ]
+}

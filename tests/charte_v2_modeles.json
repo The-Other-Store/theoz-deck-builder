@@ -1,0 +1,156 @@
+{
+  "_comment": "Reproduit les modeles de slides de la charte The Oz V2. Sert de plan de reference et de jeu de test : contient volontairement des accents pour verifier le rendu de la Quicksand embarquee.",
+  "slides": [
+    {
+      "layout": "cover",
+      "title": "Analyse CRO du parcours d'achat",
+      "subtitle": "Audit du tunnel de conversion et feuille de route priorisée"
+    },
+    {
+      "layout": "section",
+      "title": "Chapitre / sous-partie",
+      "subtitle": "est un exemple",
+      "caption": "Fond orange uni, première ligne en noir, seconde en blanc"
+    },
+    {
+      "layout": "content",
+      "title": "Applicatifs supports - Power Point",
+      "blocks": [
+        {
+          "heading": "Format d'écran",
+          "body": "*Configuration paysage 16:9* obligatoire, sans exception, pour tous les supports de présentation."
+        },
+        {
+          "heading": "Éléments graphiques obligatoires",
+          "body": "*Bande orange* de 0,5 cm calée sur le bord gauche de toutes les diapositives de contenu, et trait orange de 3 pt placé systématiquement juste sous le titre principal."
+        },
+        {
+          "heading": "Pied de page standardisé",
+          "body": "*Séparé* du contenu par un filet horizontal fin de 1 pt, logo secondaire et mention en corps 8 à gauche, type de document et pagination ferrés à droite."
+        }
+      ]
+    },
+    {
+      "layout": "capture",
+      "title": "Analyse de la page panier",
+      "intro": "Points de blocage identifiés",
+      "frictions": [
+        {
+          "label": "Le bouton de validation est situé sous la ligne de flottaison sur mobile"
+        },
+        {
+          "label": "Les frais de port ne sont pas indiqués clairement, créant une surprise au check out"
+        }
+      ],
+      "image": "images/capture_panier_mobile.png"
+    },
+    {
+      "layout": "kpi",
+      "title": "Performance globale du checkout",
+      "kpis": [
+        {
+          "icon": "trending-up",
+          "value": "+ 24,5%",
+          "label": "Taux de conversion post refonte (3 mois)",
+          "tone": "positive"
+        },
+        {
+          "icon": "triangle-alert",
+          "value": "12%",
+          "label": "Taux d'abandon observé au checkout",
+          "tone": "negative"
+        },
+        {
+          "icon": "users",
+          "value": "45 300",
+          "label": "Sessions observées depuis 1 semaine",
+          "tone": "neutral"
+        }
+      ]
+    },
+    {
+      "layout": "roadmap",
+      "title": "Feuille de route et reco CRO",
+      "phases": [
+        {
+          "heading": "Phase 1 - immédiat",
+          "items": [
+            "Corriger le bug du bouton sur Mobile (Safari)",
+            "Supprimer les champs facultatifs sur le formulaire"
+          ]
+        },
+        {
+          "heading": "Phase 2 - à 30 jours",
+          "items": [
+            "Déployer le one-page checkout",
+            "Intégrer des icônes de réassurance en PDP"
+          ]
+        },
+        {
+          "heading": "Phase 3 - à 90 jours",
+          "items": [
+            "Mettre en place les tests A/B en PDP"
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "verbatim",
+      "title": "Verbatim utilisateur",
+      "quote": "*L'étape de paiement* est trop confuse, j'ai cherché pendant 2 minutes comment valider mon panier sans créer de compte.",
+      "source": "Utilisateur Mobile, test interface du 10/11"
+    },
+    {
+      "layout": "chart",
+      "title": "Exemples utilisation palette utilitaire",
+      "chart_type": "line",
+      "categories": [
+        "Jan",
+        "Fév",
+        "Mar",
+        "Avr",
+        "Mai",
+        "Juin"
+      ],
+      "series": [
+        {
+          "name": "2024",
+          "values": [
+            55,
+            70,
+            85,
+            95,
+            115,
+            140
+          ]
+        },
+        {
+          "name": "2023",
+          "values": [
+            45,
+            60,
+            72,
+            85,
+            105,
+            130
+          ]
+        },
+        {
+          "name": "Objectif 2024",
+          "values": [
+            30,
+            42,
+            50,
+            50,
+            65,
+            95
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "closing",
+      "url": "www.the-oz.com"
+    }
+  ]
+}

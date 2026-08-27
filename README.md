@@ -1,7 +1,7 @@
 # The Oz Deck Builder
 
 Genere des PowerPoint chartes The Oz - natifs et editables - a partir d'un plan JSON.
-Un moteur deterministe unique, deux templates (clair & sombre), utilisable dans Claude
+Un moteur deterministe unique, conforme a la charte The Oz V2, utilisable dans Claude
 Code / Cowork via un serveur MCP.
 
 ## Pourquoi
@@ -21,6 +21,7 @@ theoz-deck-builder/
 ├── mcp/run.sh        Lanceur : prepare un venv isole au 1er demarrage
 ├── skills/           Skill "create-branded-deck"
 ├── docs/             Guide d'installation utilisateur
+├── tests/            Plans de reference + tests de conformite a la charte
 ├── manifest.json     Taches (install, serveur MCP)
 └── CLAUDE.md         Regles de charte et de code
 ```
@@ -61,18 +62,41 @@ Plan minimal :
 Le contrat complet est renvoye par l'outil `get_deck_schema` ; les layouts et leurs
 champs sont detailles dans `skills/create-branded-deck/references/layouts.md`.
 
-## Templates
+## Charte V2
 
-- `dark` : fond noir, premium (presentations, diagnostics).
-- `light` : fond clair, logo orange (rapports, notes).
+Un seul systeme visuel :
 
-Selection via la cle racine `"theme"` du plan, surchargeable par slide.
+- **slides de contenu** : fond blanc, bande orange de 0,5 cm au bord gauche, titre en
+  capitales corps 28 suivi d'un trait orange de 3 pt, pied standardise avec pagination ;
+- **slides evenementielles** (couverture, chapitre, fin) : fond degrade de la charte,
+  logo blanc, chrome blanc ;
+- **typographie** Quicksand (Bold/Regular), embarquee dans le `.pptx` ;
+- **palette principale** noir / vert sauge / orange / rubis / gris / blanc, et
+  **camaieu utilitaire** (moutarde vers automne) reserve aux graphiques.
 
-## Layouts
+Il n'y a pas de cle `theme` a fournir dans le plan.
 
-cover, section, content, tiles, grid, kpi, table, chart (natif), split, capture,
-recommendations, audit, closing. Detail et exemples :
+Le masque `engine/oz_deck/assets/oz_template_master.pptx` porte ces invariants et
+7 dispositions nommees "OZ - ..." : le deck genere est donc aussi un template
+reutilisable dans PowerPoint.
+
+## Layouts (20)
+
+cover, report-cover, section, content, tiles, grid, kpi, roadmap, verbatim, table,
+chart (natif), split, capture, recommendations, audit, dashboard, summary,
+performance, analysis, closing. Detail et exemples :
 `skills/create-branded-deck/references/layouts.md`.
+
+## Tests de conformite
+
+```bash
+python3 tests/conformance.py <deck.pptx>
+```
+
+Inspecte le `.pptx` produit (formes, couleurs, polices, alignements reels) et verifie
+les regles de la charte : fonds, bande orange, trait de titre, pied, palette,
+typographie, ferrage, interlignage, planchers de corps, absence d'ombre portee,
+confinement des images, ainsi que la validite structurelle OOXML.
 
 ## Prerequis
 

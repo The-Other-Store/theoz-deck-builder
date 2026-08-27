@@ -82,8 +82,8 @@ En conversation, la skill `create-branded-deck` guide toute la composition. En
 resume :
 
 1. Decrire le besoin (brief, chiffres, ou fichier Excel/CSV).
-2. Choisir le template : `dark` (fond noir, premium, defaut) ou `light`
-   (fond clair, rapports).
+2. Rien a choisir cote template : la charte V2 n'a qu'un systeme visuel (contenu sur
+   fond blanc, slides evenementielles sur le degrade de la charte).
 3. Laisser Claude composer un plan JSON leger (une liste `slides`, chaque slide =
    un `layout` + ses champs), le valider (`validate_deck`), puis le rendre
    (`create_deck`).

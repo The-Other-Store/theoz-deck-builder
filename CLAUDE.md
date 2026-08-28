@@ -20,6 +20,8 @@ engine/oz_deck/      <- MOTEUR deterministe (charte + layouts + rendu). NE PAS d
   icons.py           <- icones Lucide (PNG teintes)
   catalog.py         <- catalogue + JSON Schema + validate()
   fontembed.py       <- embarquement de la police dans le .pptx
+  docprops.py        <- tampon de version de charte dans le .pptx
+  fonts.py           <- acces aux fontes pour un consommateur hors PowerPoint
 mcp/server.py        <- adaptateur MCP stdio, importe oz_deck
 mcp/run.sh           <- lanceur : prepare un venv isole au 1er demarrage
 skills/              <- skill qui pilote le MCP
@@ -108,6 +110,9 @@ une cote en dur ailleurs.
 - `python3 tests/conformance.py <sortie.pptx>` (TESTS DE CHARTE : verifie les regles
   ci-dessus sur le .pptx produit, plus sa validite structurelle OOXML. A lancer apres
   toute modification de theme.py ou engine.py.)
+- `PYTHONPATH=engine python3 -m oz_deck --export json|css` (tokens de charte pour un
+  consommateur hors PowerPoint : rapport PDF, page web. `theme.py` est la seule
+  source, le generateur ne contient aucune valeur en dur.)
 
 ## Layouts disponibles (20)
 
@@ -124,6 +129,28 @@ evenementielles est `assets/fond_chapitre.jpg`. Le masque brande
 `assets/oz_template_master.pptx` porte les invariants (fond, bande orange, titre +
 trait, pied) et 7 dispositions nommees "OZ - ..." : le deck genere est donc aussi un
 template reutilisable dans PowerPoint.
+
+## Consommer la charte hors PowerPoint
+
+Le moteur n'est pas seulement un generateur de `.pptx` : c'est la source de verite
+de la charte pour tout consommateur.
+
+- `python3 -m oz_deck --export json|css` donne palette, camaieu, roles semantiques,
+  echelle DOCUMENT, espacement 2:1, bornes d'interlignage et planchers de corps. Le
+  CSS est utilisable tel quel par WeasyPrint.
+- `oz_deck.fonts` expose les deux Quicksand statiques a un chemin stable, avec leur
+  licence OFL et un `@font-face` pret a coller. La licence DOIT accompagner toute
+  redistribution.
+- `CHARTE_VERSION` (theme.py) est propagee a l'export ET tamponnee dans le `.pptx`
+  (propriete personnalisee `OzCharteVersion`, voir `docprops.py`) : un livrable est
+  toujours rattachable a une version de charte precise. La bumper des qu'un token
+  change.
+- `tests/charte_tokens.json` fige l'export : toute derive d'un token de `Brand` fait
+  echouer `conformance.py`. Une modification volontaire se valide en regenerant
+  l'instantane ET en bumpant `CHARTE_VERSION`.
+
+Le rendu doit rester REPRODUCTIBLE octet pour octet : aucun horodatage dans le
+`.pptx`, sinon toute comparaison de decks de reference devient impossible.
 
 ## Points ouverts
 

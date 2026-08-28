@@ -87,6 +87,37 @@ chart (natif), split, capture, recommendations, audit, dashboard, summary,
 performance, analysis, closing. Detail et exemples :
 `skills/create-branded-deck/references/layouts.md`.
 
+## Consommer la charte hors PowerPoint
+
+Le moteur est la source de verite de la charte, y compris pour un consommateur qui
+ne produit pas de PowerPoint (rapport PDF, page web) :
+
+```bash
+PYTHONPATH=engine python3 -m oz_deck --export json   # tokens bruts
+PYTHONPATH=engine python3 -m oz_deck --export css    # :root { --oz-* }
+```
+
+Le CSS est utilisable tel quel par WeasyPrint : valeurs litterales, pas de `var()`
+imbrique, corps et espacements en `pt`. Il couvre la palette principale, le camaieu
+utilitaire et sa paire de contraste, les roles semantiques, l'echelle DOCUMENT
+(H1 24 / H2 14 / corps 10,5), l'espacement 2:1, les bornes d'interlignage et les
+planchers de corps.
+
+Les fontes suivent :
+
+```python
+from oz_deck import fonts
+fonts.files()["regular"]     # chemin stable des Quicksand statiques
+print(fonts.css_font_face()) # @font-face pret a coller
+```
+
+Quicksand est sous licence SIL Open Font License 1.1 : `OFL.txt` est livre a cote
+des fichiers et doit accompagner toute redistribution.
+
+Chaque export porte `charte_version`, et la meme valeur est tamponnee dans les
+`.pptx` produits (propriete personnalisee `OzCharteVersion`) : un livrable reste
+rattachable a une version de charte precise.
+
 ## Tests de conformite
 
 ```bash

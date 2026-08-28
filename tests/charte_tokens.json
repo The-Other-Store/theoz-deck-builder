@@ -1,0 +1,99 @@
+{
+  "charte_version": "2.1.0",
+  "police": {
+    "famille": "Quicksand",
+    "graisses": {
+      "regular": 400,
+      "bold": 700
+    },
+    "serif_interdite": true,
+    "fichiers": {
+      "regular": "Quicksand-Regular.ttf",
+      "bold": "Quicksand-Bold.ttf"
+    },
+    "dossier": "assets/fonts",
+    "licence": "SIL Open Font License 1.1",
+    "licence_fichier": "OFL.txt"
+  },
+  "couleurs": {
+    "principale": {
+      "noir": "#191919",
+      "vert-sauge": "#3E9356",
+      "orange": "#EC4324",
+      "rubis": "#D3122A",
+      "gris": "#999999",
+      "blanc": "#FFFFFF"
+    },
+    "utilitaire": {
+      "moutarde": "#D99B26",
+      "citrouille": "#EA7C23",
+      "orange": "#EC4324",
+      "cuivre": "#8F3D2E",
+      "automne": "#59261D"
+    },
+    "utilitaire_ordre": [
+      "#D99B26",
+      "#EA7C23",
+      "#EC4324",
+      "#8F3D2E",
+      "#59261D"
+    ],
+    "paire_contraste": [
+      "#D99B26",
+      "#EC4324"
+    ],
+    "technique": {
+      "gris-technique": "#F3F2F2",
+      "filet": "#E7E7E7"
+    },
+    "roles": {
+      "positif": "#3E9356",
+      "negatif": "#D3122A",
+      "accent": "#EC4324",
+      "neutre": "#191919",
+      "secondaire": "#999999",
+      "fond": "#FFFFFF"
+    }
+  },
+  "typographie": {
+    "document": {
+      "h1": 24.0,
+      "h2": 14.0,
+      "corps": 10.5
+    },
+    "planchers": {
+      "titre": 14.0,
+      "texte": 12.0
+    }
+  },
+  "espacement": {
+    "ratio_avant_apres": 2.0,
+    "h1": {
+      "avant": 20.0,
+      "apres": 10.0
+    },
+    "h2": {
+      "avant": 16.0,
+      "apres": 8.0
+    },
+    "corps": {
+      "avant": 0.0,
+      "apres": 6.0
+    },
+    "unite": "pt"
+  },
+  "interlignage": {
+    "texte_courant_min": 1.3,
+    "texte_courant_max": 1.4,
+    "defaut": 1.35,
+    "dense": 1.2
+  },
+  "editorial": {
+    "accent_premier_mot": true,
+    "balise_concept": "*concat*",
+    "ferrage": "gauche",
+    "justifie_interdit": true,
+    "centre_interdit": true,
+    "chiffres_ferres_a_droite": true
+  }
+}

@@ -14,6 +14,17 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pptx.dml.color import RGBColor
 
+# Version de la CHARTE appliquee par le moteur. Distincte de la version du paquet
+# (`oz_deck.__version__`) : le moteur peut evoluer sans que la charte bouge, et
+# inversement. Propagee a trois endroits, pour qu'un livrable soit toujours
+# rattachable a une charte precise :
+#   - l'export de tokens (`python -m oz_deck.theme --export ...`) ;
+#   - la reponse de l'API distante (champ `charte_version`) ;
+#   - les proprietes personnalisees du .pptx (`OzCharteVersion`, voir docprops.py).
+# 2.x = charte V2 (CHARTE_TOZ_DOCUMENTS_V2) ; le mineur suit les revisions de
+# relecture appliquees a cette charte.
+CHARTE_VERSION = "2.1.0"
+
 
 def rgb(hexstr: str) -> RGBColor:
     hexstr = hexstr.lstrip("#")
@@ -88,6 +99,8 @@ class Brand:
     SP_H2 = (16.0, 8.0)
     SP_BODY = (0.0, 6.0)
     # Interlignage strictement entre 1,3 et 1,4 pour le texte courant.
+    LINE_MIN = 1.3
+    LINE_MAX = 1.4
     LINE = 1.35
     LINE_TIGHT = 1.2     # blocs denses (cartes, cellules)
 
@@ -204,3 +217,180 @@ THEMES = {"oz": CONTENT, "light": CONTENT, "dark": CONTENT}
 def get_theme(name: str | None = None) -> Surface:
     """Surface de contenu (fond blanc). Conserve pour compatibilite d'appel."""
     return CONTENT
+
+
+# ===========================================================================
+# Export des tokens de charte
+# ===========================================================================
+#
+# Un consommateur NON-PowerPoint (rapport PDF de la flotte, page web, note) doit
+# pouvoir appliquer la charte V2 sans jamais redeclarer une couleur ni un corps.
+# Ce module est la seule source : le generateur ci-dessous ne contient AUCUNE
+# valeur en dur, il ne fait que lire `Brand` et `CHARTE_VERSION`.
+#
+#     python -m oz_deck.theme --export json    # tokens bruts
+#     python -m oz_deck.theme --export css     # :root { --oz-* }
+#
+# L'export est versionne : il embarque `charte_version`, ce qui permet de
+# detecter une divergence entre un PDF produit par un consommateur et un .pptx
+# produit par le moteur (meme version tamponnee, cf. docprops.py).
+
+from . import fonts as _fonts
+
+
+def _hex(color: RGBColor) -> str:
+    return "#" + str(color)
+
+
+# Nom expose -> attribut de `Brand`. Les valeurs ne sont JAMAIS ecrites ici.
+_PALETTE_PRINCIPALE = {
+    "noir": "NOIR", "vert-sauge": "VERT", "orange": "ORANGE",
+    "rubis": "RUBIS", "gris": "GRIS", "blanc": "BLANC",
+}
+_PALETTE_UTILITAIRE = {
+    "moutarde": "MOUTARDE", "citrouille": "CITROUILLE", "orange": "ORANGE",
+    "cuivre": "CUIVRE", "automne": "AUTOMNE",
+}
+_GRIS_TECHNIQUES = {"gris-technique": "GRIS_TECH", "filet": "FILET"}
+_ROLES = {
+    "positif": "VERT",      # progression, objectif atteint
+    "negatif": "RUBIS",     # alerte, echec, metrique negative
+    "accent": "ORANGE",     # ponctuation identitaire
+    "neutre": "NOIR",       # volumes, donnees de reference
+    "secondaire": "GRIS",   # legendes, sous-titres discrets
+    "fond": "BLANC",        # fond de toutes les slides de contenu
+}
+
+
+def export_tokens() -> dict:
+    """Tokens de charte, prets a etre consommes hors PowerPoint."""
+    g = lambda name: getattr(Brand, name)  # noqa: E731
+
+    return {
+        "charte_version": CHARTE_VERSION,
+        "police": {
+            "famille": g("FONT"),
+            "graisses": _fonts.WEIGHTS,
+            "serif_interdite": True,
+            # Fichiers livres avec le paquet. Chemins RELATIFS au dossier de
+            # fontes, volontairement : un chemin absolu dependrait de la machine
+            # et rendrait l'export non comparable. Resolution a l'execution :
+            # `oz_deck.fonts.files()`.
+            "fichiers": dict(_fonts.FILES),
+            "dossier": "assets/fonts",
+            "licence": _fonts.LICENCE,
+            "licence_fichier": _fonts.LICENCE_FILE,
+        },
+        "couleurs": {
+            "principale": {k: _hex(g(v)) for k, v in _PALETTE_PRINCIPALE.items()},
+            "utilitaire": {k: _hex(g(v)) for k, v in _PALETTE_UTILITAIRE.items()},
+            # Ordre du camaieu pour les series d'un graphique (charte p.8).
+            "utilitaire_ordre": [_hex(c) for c in g("CHART_PALETTE")],
+            # A DEUX series comparees : contraste fort plutot que deux tons voisins.
+            "paire_contraste": [_hex(c) for c in g("CHART_PAIR")],
+            "technique": {k: _hex(g(v)) for k, v in _GRIS_TECHNIQUES.items()},
+            "roles": {k: _hex(g(v)) for k, v in _ROLES.items()},
+        },
+        "typographie": {
+            # Echelle DOCUMENT (rapport A4, note, page web). Distincte de
+            # l'echelle slide, qui n'a de sens qu'en 16:9.
+            "document": {
+                "h1": g("DOC_H1"), "h2": g("DOC_H2"), "corps": g("DOC_BODY"),
+            },
+            "planchers": {"titre": g("MIN_HEADING"), "texte": g("MIN_TEXT")},
+        },
+        "espacement": {
+            # L'espace AVANT un titre vaut 2x l'espace APRES (charte p.11).
+            "ratio_avant_apres": g("SP_H1")[0] / g("SP_H1")[1],
+            "h1": {"avant": g("SP_H1")[0], "apres": g("SP_H1")[1]},
+            "h2": {"avant": g("SP_H2")[0], "apres": g("SP_H2")[1]},
+            "corps": {"avant": g("SP_BODY")[0], "apres": g("SP_BODY")[1]},
+            "unite": "pt",
+        },
+        "interlignage": {
+            # Strictement borne pour le texte courant (charte p.11).
+            "texte_courant_min": g("LINE_MIN"),
+            "texte_courant_max": g("LINE_MAX"),
+            "defaut": g("LINE"),
+            "dense": g("LINE_TIGHT"),
+        },
+        "editorial": {
+            # Premier mot ou concept cle en gras ET en couleur.
+            "accent_premier_mot": True,
+            "balise_concept": "*concat*",
+            "ferrage": "gauche",
+            "justifie_interdit": True,
+            "centre_interdit": True,
+            "chiffres_ferres_a_droite": True,
+        },
+    }
+
+
+def _flatten(node, prefix="oz"):
+    """Aplatit l'arbre de tokens en paires `--oz-a-b-c` -> valeur."""
+    out = []
+    if isinstance(node, dict):
+        for key, val in node.items():
+            out += _flatten(val, f"{prefix}-{key}")
+    elif isinstance(node, list):
+        out.append((prefix, ", ".join(str(v) for v in node)))
+    elif isinstance(node, bool):
+        out.append((prefix, "true" if node else "false"))
+    else:
+        out.append((prefix, str(node)))
+    return out
+
+
+def export_css() -> str:
+    """Variables CSS de la charte, utilisables telles quelles par WeasyPrint.
+
+    Pas de `var()` imbrique, pas de calcul, pas de preprocesseur : chaque
+    variable porte une valeur litterale. Les corps et espacements sont exprimes
+    en `pt`, unite native de WeasyPrint pour la mise en page papier.
+    """
+    tokens = export_tokens()
+    lines = [
+        "/* Charte The Oz - tokens generes par `python -m oz_deck.theme --export css`.",
+        f"   Charte version {tokens['charte_version']}. NE PAS EDITER A LA MAIN :",
+        "   la source unique est engine/oz_deck/theme.py. */",
+        ":root {",
+    ]
+    pt_prefixes = ("oz-typographie-", "oz-espacement-")
+    for name, value in _flatten(tokens):
+        if value in ("true", "false"):
+            continue          # drapeaux de politique : utiles en JSON, pas en CSS
+        name = name.replace("_", "-")
+        if name.startswith(pt_prefixes) and _is_number(value) and "ratio" not in name:
+            value = f"{value}pt"
+        lines.append(f"  --{name}: {value};")
+    lines.append("}")
+    return "\n".join(lines) + "\n"
+
+
+def _is_number(value: str) -> bool:
+    try:
+        float(value)
+        return True
+    except (TypeError, ValueError):
+        return False
+
+
+def _main(argv=None) -> int:
+    import argparse
+    import json as _json
+
+    ap = argparse.ArgumentParser(
+        prog="python -m oz_deck.theme",
+        description="Exporte les tokens de la charte The Oz (source unique : theme.py).")
+    ap.add_argument("--export", choices=("json", "css"), required=True,
+                    help="format de sortie")
+    args = ap.parse_args(argv)
+    if args.export == "json":
+        print(_json.dumps(export_tokens(), ensure_ascii=False, indent=2))
+    else:
+        print(export_css(), end="")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(_main())

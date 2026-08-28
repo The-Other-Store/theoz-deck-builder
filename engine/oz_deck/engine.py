@@ -22,7 +22,8 @@ from pptx.enum.chart import XL_CHART_TYPE, XL_LEGEND_POSITION, XL_LABEL_POSITION
 from pptx.chart.data import CategoryChartData
 from pptx.dml.color import RGBColor
 
-from .theme import Brand, Surface, CONTENT, EVENT, tone, glyph_hex_on
+from .theme import (Brand, Surface, CONTENT, EVENT, tone, glyph_hex_on,
+                    CHARTE_VERSION)
 from . import icons
 
 
@@ -95,7 +96,7 @@ def _running_line(size: float, requested: float, bold: bool = False) -> float:
     """
     if bold or size is None or not (Brand.MIN_TEXT <= size <= 15.0):
         return requested
-    return min(1.4, max(1.3, requested))
+    return min(Brand.LINE_MAX, max(Brand.LINE_MIN, requested))
 
 
 def _tf(box, line_spacing=Brand.LINE, anchor=MSO_ANCHOR.TOP):
@@ -1362,7 +1363,23 @@ def build(schema: dict, output_path: str, template: str | None = None) -> str:
     finally:
         _RENDER["master"] = False
     _embed_charter_font(output_path)
+    _stamp_charter(output_path)
     return output_path
+
+
+def _stamp_charter(output_path: str) -> None:
+    """Tamponne la version de charte et celle du moteur dans le .pptx.
+
+    Permet de rattacher un livrable a une charte precise, et de detecter une
+    divergence entre deux consommateurs du moteur. Aucun horodatage : le rendu
+    doit rester reproductible octet pour octet.
+    """
+    from . import docprops
+    from . import __version__ as engine_version
+    docprops.stamp(output_path, {
+        "OzCharteVersion": CHARTE_VERSION,
+        "OzEngineVersion": engine_version,
+    })
 
 
 _FONT_DIR = os.path.join(_ASSETS_DIR, "fonts")

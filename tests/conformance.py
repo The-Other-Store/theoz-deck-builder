@@ -23,7 +23,9 @@ sys.path.insert(0, str(ROOT / "engine"))
 from pptx import Presentation                                    # noqa: E402
 from pptx.enum.shapes import MSO_SHAPE_TYPE                      # noqa: E402
 from pptx.enum.text import PP_ALIGN                              # noqa: E402
-from oz_deck.theme import Brand                                  # noqa: E402
+from oz_deck.theme import Brand, CHARTE_VERSION                  # noqa: E402
+from oz_deck import docprops, __version__ as ENGINE_VERSION      # noqa: E402
+from oz_deck.theme import export_tokens                          # noqa: E402
 
 EMU = 914400.0
 TOL = 0.02   # tolerance geometrique (pouces)
@@ -518,6 +520,13 @@ def check_deck(path: Path) -> Report:
               "; ".join(bad_punct[:3]))
     rep.check("police Quicksand embarquee dans le fichier",
               _fonts_embedded(path), "")
+    # Tampon de tracabilite : sans ce controle, il sauterait au premier refactor
+    # du builder sans que personne ne le voie.
+    stamp = docprops.read(str(path))
+    want = {"OzCharteVersion": CHARTE_VERSION, "OzEngineVersion": ENGINE_VERSION}
+    rep.check(f"version de charte tamponnee ({CHARTE_VERSION})",
+              stamp == want,
+              f"lu {stamp or 'aucune propriete personnalisee'}, attendu {want}")
     defects = _ooxml_defects(path)
     rep.check("structure OOXML valide (PowerPoint n'a rien a reparer)",
               not defects, "; ".join(defects[:3]))
@@ -624,6 +633,23 @@ def _ooxml_defects(path: Path) -> list[str]:
     return out
 
 
+def _token_drift(snapshot, current, path="") -> list[str]:
+    """Compare deux arbres de tokens et decrit chaque ecart, chemin compris."""
+    out = []
+    if isinstance(snapshot, dict) and isinstance(current, dict):
+        for key in sorted(set(snapshot) | set(current)):
+            where = f"{path}.{key}" if path else key
+            if key not in current:
+                out.append(f"{where} supprime")
+            elif key not in snapshot:
+                out.append(f"{where} ajoute ({current[key]!r})")
+            else:
+                out += _token_drift(snapshot[key], current[key], where)
+    elif snapshot != current:
+        out.append(f"{path} : {snapshot!r} -> {current!r}")
+    return out
+
+
 def _fonts_embedded(path: Path) -> bool:
     import zipfile
     with zipfile.ZipFile(path) as z:
@@ -635,8 +661,8 @@ def _fonts_embedded(path: Path) -> bool:
 
 # ----------------------------- CLI -----------------------------
 
-PLANS = ["tests/charte_v2_modeles.json", "tests/ecommerce_analysis.json",
-         "tests/diagnostic_recreation.json"]
+PLANS = ["tests/charte_v2_modeles.json", "tests/rapport_hebdomadaire.json",
+         "tests/ecommerce_analysis.json", "tests/diagnostic_recreation.json"]
 
 
 def _image_fixture(outdir: Path) -> Path | None:
@@ -738,6 +764,24 @@ def main() -> int:
     else:
         targets = [Path(a) for a in args]
     reports = [check_deck(t) for t in targets]
+
+    # Tokens de charte : l'instantane fige fait echouer toute derive silencieuse
+    # d'un token de `Brand`. Une modification volontaire se valide en regenerant
+    # l'instantane ET en bumpant CHARTE_VERSION.
+    rep = Report(ROOT / "tests" / "charte_tokens.json")
+    snap_path = ROOT / "tests" / "charte_tokens.json"
+    if snap_path.exists():
+        import json as _json
+        snapshot = _json.loads(snap_path.read_text(encoding="utf-8"))
+        current = export_tokens()
+        drift = _token_drift(snapshot, current)
+        rep.check("tokens de charte conformes a l'instantane fige", not drift,
+                  "; ".join(drift[:4]))
+    else:
+        rep.check("instantane des tokens present", False,
+                  "tests/charte_tokens.json absent : "
+                  "`python -m oz_deck --export json > tests/charte_tokens.json`")
+    reports.append(rep)
 
     # Les templates livres comme assets sont fabriques en XML a la main :
     # on verifie au moins leur validite structurelle.

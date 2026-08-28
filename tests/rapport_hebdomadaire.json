@@ -1,0 +1,172 @@
+{
+  "_comment": "Plan de reference d'un rapport hebdomadaire ecommerce (donnees fictives). Cible du generateur de plans de reports-fleet et test de non-regression du moteur. N'utilise QUE six layouts : report-cover, summary, performance, analysis, recommendations, closing.",
+  "slides": [
+    {
+      "layout": "report-cover",
+      "title": "Rapport hebdomadaire de performance",
+      "subtitle": "Semaine 34 - du 18 au 24 aout 2026",
+      "tagline": "Expertise, performance, croissance"
+    },
+    {
+      "layout": "summary",
+      "title": "Vue d'ensemble de la semaine",
+      "blocks": [
+        {
+          "heading": "Chiffre d'affaires",
+          "body": "*Progression de 12,4 %* sur une semaine, portee par le trafic organique et par un panier moyen en hausse de 6 €."
+        },
+        {
+          "heading": "Conversion",
+          "body": "*Stable* a 2,41 % malgre la hausse du trafic, ce qui signale une acquisition de qualite constante plutot qu'un effet de volume."
+        },
+        {
+          "heading": "Point de vigilance",
+          "body": "*Le mobile* concentre 71 % des sessions mais seulement 54 % du chiffre d'affaires : l'ecart se creuse depuis trois semaines."
+        }
+      ],
+      "attention": {
+        "title": "Points d'attention prioritaires",
+        "items": [
+          "Ecart de conversion mobile / desktop : 1,88 % contre 3,42 %.",
+          "Taux d'abandon au paiement remonte a 68,2 %, au-dessus de la cible interne de 62 %."
+        ]
+      }
+    },
+    {
+      "layout": "performance",
+      "title": "Indicateurs cles de la semaine",
+      "kpis": [
+        {
+          "icon": "circle-dollar-sign",
+          "label": "Chiffre d'affaires",
+          "value": "184 200 €",
+          "tone": "positive",
+          "delta": "+12,4 %",
+          "positive": true
+        },
+        {
+          "icon": "shopping-cart",
+          "label": "Commandes",
+          "value": "1 486",
+          "tone": "positive",
+          "delta": "+9,1 %",
+          "positive": true
+        },
+        {
+          "icon": "percent",
+          "label": "Taux de conversion",
+          "value": "2,41 %",
+          "tone": "neutral",
+          "delta": "+0,02 pt",
+          "positive": true
+        },
+        {
+          "icon": "credit-card",
+          "label": "Panier moyen",
+          "value": "124 €",
+          "tone": "positive",
+          "delta": "+6 €",
+          "positive": true
+        }
+      ],
+      "headers": ["Indicateur", "S33", "S34", "Evolution"],
+      "rows": [
+        ["Sessions", "61 420", "68 934", "+12,2 %"],
+        ["Commandes", "1 362", "1 486", "+9,1 %"],
+        ["Panier moyen", "118 €", "124 €", "+5,1 %"],
+        ["Taux d'abandon panier", "64,8 %", "!68,2 %", "!+3,4 pt"],
+        ["TOTAL chiffre d'affaires", "163 900 €", "184 200 €", "+12,4 %"]
+      ]
+    },
+    {
+      "layout": "analysis",
+      "title": "Analyse du tunnel de conversion",
+      "findings": [
+        {
+          "icon": "smartphone",
+          "label": "Constat",
+          "body": "*Le mobile* represente 71 % des sessions mais 54 % du chiffre d'affaires, un ecart de 17 points.",
+          "tone": "neutral"
+        },
+        {
+          "icon": "credit-card",
+          "label": "Cause probable",
+          "body": "*L'absence de wallets* sur mobile allonge le paiement de trois champs supplementaires par rapport au desktop.",
+          "tone": "negative"
+        },
+        {
+          "icon": "circle-check-big",
+          "label": "Levier",
+          "body": "*Apple Pay et Google Pay* couvriraient 62 % des sessions mobiles d'apres la repartition des terminaux observee.",
+          "tone": "positive"
+        }
+      ],
+      "chart": {
+        "chart_type": "bar",
+        "categories": ["Panier", "Livraison", "Paiement", "Confirmation"],
+        "series": [
+          { "name": "Mobile", "values": [100, 74, 41, 32] },
+          { "name": "Desktop", "values": [100, 86, 68, 61] }
+        ]
+      },
+      "attention": {
+        "title": "A surveiller la semaine prochaine",
+        "items": [
+          "La chute mobile se concentre entre livraison et paiement : 33 points perdus.",
+          "Aucun test A/B en cours sur cette etape, la mesure sera donc comparative."
+        ]
+      }
+    },
+    {
+      "layout": "recommendations",
+      "title": "Recommandations de la semaine",
+      "items": [
+        {
+          "icon": "credit-card",
+          "title": "Activer les wallets sur mobile",
+          "impact": "Eleve",
+          "effort": "Faible",
+          "priority": "1",
+          "tone": "accent",
+          "actions": [
+            "Activer Apple Pay et Google Pay",
+            "Les remonter au-dessus du formulaire",
+            "Mesurer sur deux semaines pleines"
+          ]
+        },
+        {
+          "icon": "truck",
+          "title": "Afficher les frais plus tot",
+          "impact": "Eleve",
+          "effort": "Moyen",
+          "priority": "2",
+          "tone": "negative",
+          "actions": [
+            "Estimer les frais des la fiche produit",
+            "Rappeler le seuil de franco au panier"
+          ]
+        },
+        {
+          "icon": "gauge",
+          "title": "Reduire le temps de chargement",
+          "impact": "Moyen",
+          "effort": "Moyen",
+          "priority": "3",
+          "actions": [
+            "Compresser les visuels de la fiche produit",
+            "Differer les scripts tiers non critiques"
+          ]
+        }
+      ],
+      "objective": {
+        "label": "Objectif a 4 semaines",
+        "body": "Ramener le taux d'abandon au paiement sous 62 % et reduire de moitie l'ecart de conversion entre mobile et desktop.",
+        "icon": "target"
+      }
+    },
+    {
+      "layout": "closing",
+      "url": "www.the-oz.com"
+    }
+  ]
+}

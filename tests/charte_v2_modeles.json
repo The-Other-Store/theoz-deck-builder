@@ -1,5 +1,5 @@
 {
-  "_comment": "Reproduit les modeles de slides de la charte The Oz V2. Sert de plan de reference et de jeu de test : contient volontairement des accents pour verifier le rendu de la Quicksand embarquee.",
+  "_comment": "Reproduit les modeles de slides de CHARTE_TOZ_DOCUMENTS_V2 (p.16 a p.23) pour comparaison 1:1 avec le PDF de charte. Contient volontairement des accents : verifie le rendu de la Quicksand embarquee.",
   "slides": [
     {
       "layout": "cover",

@@ -1,6 +1,6 @@
 {
   "name": "theoz-deck-builder",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Manifeste de taches du plugin : installation des dependances et serveur MCP local.",
   "runtime": {
     "python": ">=3.11"
@@ -13,6 +13,10 @@
     "mcp-serve": {
       "description": "Lance le serveur MCP local (stdio).",
       "command": "OZ_OUTPUT_DIR=./out PYTHONPATH=./engine python3 mcp/server.py"
+    },
+    "export-tokens": {
+      "description": "Exporte les tokens de charte pour un consommateur hors PowerPoint (JSON ou CSS).",
+      "command": "PYTHONPATH=engine python3 -m oz_deck --export json"
     },
     "conformance": {
       "description": "Verifie la conformite d'un deck a la charte V2 (et sa validite OOXML).",

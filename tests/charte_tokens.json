@@ -1,5 +1,5 @@
 {
-  "charte_version": "2.1.0",
+  "charte_version": "2.2.0",
   "police": {
     "famille": "Quicksand",
     "graisses": {
@@ -14,6 +14,31 @@
     "dossier": "assets/fonts",
     "licence": "SIL Open Font License 1.1",
     "licence_fichier": "OFL.txt"
+  },
+  "logos": {
+    "fichiers": {
+      "principal": {
+        "orange": "logo_principal_orange.png",
+        "blanc": "logo_principal_blanc.png"
+      },
+      "secondaire": {
+        "orange": "logo_secondaire_orange.png",
+        "blanc": "logo_secondaire_blanc.png"
+      }
+    },
+    "dossier": "assets",
+    "ratio_largeur_hauteur": {
+      "principal": 1.0,
+      "secondaire": 1.099706744868035
+    },
+    "marge_transparente_gauche": {
+      "principal": 0.0813,
+      "secondaire": 0.01
+    },
+    "zone_de_protection": 1.0,
+    "variante_fond_clair": "orange",
+    "variante_fond_sombre": "blanc",
+    "noir_banni": true
   },
   "couleurs": {
     "principale": {

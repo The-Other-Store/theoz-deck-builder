@@ -25,6 +25,7 @@ from pptx.dml.color import RGBColor
 from .theme import (Brand, Surface, CONTENT, EVENT, tone, glyph_hex_on,
                     CHARTE_VERSION)
 from . import icons
+from . import logos
 
 
 # Mode de rendu. master=True quand on rend SUR le masque brande (oz_template_master)
@@ -195,29 +196,20 @@ def _bullets(slide, items, left, top, width, height, size=Brand.BODY,
 # --------------------------- fonds & chrome ---------------------------
 
 _ASSETS_DIR = os.path.join(os.path.dirname(__file__), "assets")
-_LOGO_RATIO = {"principal": 1.0, "secondaire": 1500 / 1364}
-# Fraction de marge TRANSPARENTE a gauche de chaque PNG officiel : on la compense
-# pour que l'encre du logo tombe exactement sur la marge (retour : "ferrer les
-# elements a gauche : logo + tiret").
-_LOGO_INK_LEFT = {"principal": 0.0813, "secondaire": 0.0100}
-
-
-def _logo_path(kind: str, variant: str) -> str:
-    return os.path.join(_ASSETS_DIR, f"logo_{kind}_{variant}.png")
-
-
 def _logo(slide, left, top, height, surface: Surface, kind="secondaire"):
     """Logo officiel, ferre a gauche sur `left` (encre, marge transparente deduite).
 
     Charte : orange sur fond clair, blanc sur fond orange/sombre. Le noir est banni.
+    Chemins, ratios et compensation d'encre vivent dans `logos.py`, qui les expose
+    aussi aux consommateurs hors PowerPoint : une seule declaration.
     Retourne la largeur d'ENCRE, pour enchainer un libelle a la bonne distance.
     """
-    path = _logo_path(kind, surface.logo_variant)
-    width = height * _LOGO_RATIO.get(kind, 1.0)
-    ink = _LOGO_INK_LEFT.get(kind, 0.0)
-    slide.shapes.add_picture(path, Inches(left - ink * width), Inches(top),
+    width = logos.width_for_height(kind, height)
+    ink = logos.ink_offset(kind, width)
+    slide.shapes.add_picture(logos.path(kind, surface.logo_variant),
+                             Inches(left - ink), Inches(top),
                              Inches(width), Inches(height))
-    return width * (1 - 2 * ink)
+    return width - 2 * ink
 
 
 _EVENT_BG_PATH = os.path.join(_ASSETS_DIR, Brand.EVENT_BG_IMAGE)

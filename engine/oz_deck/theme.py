@@ -23,7 +23,7 @@ from pptx.dml.color import RGBColor
 #   - les proprietes personnalisees du .pptx (`OzCharteVersion`, voir docprops.py).
 # 2.x = charte V2 (CHARTE_TOZ_DOCUMENTS_V2) ; le mineur suit les revisions de
 # relecture appliquees a cette charte.
-CHARTE_VERSION = "2.1.0"
+CHARTE_VERSION = "2.2.0"
 
 
 def rgb(hexstr: str) -> RGBColor:
@@ -236,6 +236,7 @@ def get_theme(name: str | None = None) -> Surface:
 # produit par le moteur (meme version tamponnee, cf. docprops.py).
 
 from . import fonts as _fonts
+from . import logos as _logos
 
 
 def _hex(color: RGBColor) -> str:
@@ -280,6 +281,21 @@ def export_tokens() -> dict:
             "dossier": "assets/fonts",
             "licence": _fonts.LICENCE,
             "licence_fichier": _fonts.LICENCE_FILE,
+        },
+        "logos": {
+            # Chemins RELATIFS au dossier d'assets, comme pour les fontes : un
+            # chemin absolu dependrait de la machine. Resolution a l'execution :
+            # `oz_deck.logos.path(type, variante)` ou `logos.files()`.
+            "fichiers": {k: dict(v) for k, v in _logos.FILES.items()},
+            "dossier": "assets",
+            "ratio_largeur_hauteur": dict(_logos.RATIO),
+            # Marge transparente a gauche de chaque PNG, a compenser pour un
+            # ferrage a gauche exact.
+            "marge_transparente_gauche": dict(_logos.INK_LEFT),
+            "zone_de_protection": _logos.PROTECTION_RATIO,
+            "variante_fond_clair": _logos.for_background(dark=False),
+            "variante_fond_sombre": _logos.for_background(dark=True),
+            "noir_banni": True,
         },
         "couleurs": {
             "principale": {k: _hex(g(v)) for k, v in _PALETTE_PRINCIPALE.items()},

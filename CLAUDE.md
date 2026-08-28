@@ -21,7 +21,7 @@ engine/oz_deck/      <- MOTEUR deterministe (charte + layouts + rendu). NE PAS d
   catalog.py         <- catalogue + JSON Schema + validate()
   fontembed.py       <- embarquement de la police dans le .pptx
   docprops.py        <- tampon de version de charte dans le .pptx
-  fonts.py           <- acces aux fontes pour un consommateur hors PowerPoint
+  fonts.py / logos.py <- fontes et logos officiels, exposes aux consommateurs
 mcp/server.py        <- adaptateur MCP stdio, importe oz_deck
 mcp/run.sh           <- lanceur : prepare un venv isole au 1er demarrage
 skills/              <- skill qui pilote le MCP

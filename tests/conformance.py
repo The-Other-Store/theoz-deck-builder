@@ -13,6 +13,7 @@ Usage :
 Sortie : un rapport lisible ; code de sortie 1 si une regle est violee.
 """
 from __future__ import annotations
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -63,7 +64,9 @@ class Report:
         out = [f"\n=== {self.path.name} ==="]
         for rule, ok, detail in self.rows:
             mark = "OK  " if ok else "KO  "
-            out.append(f"  {mark}{rule}" + (f"  -> {detail}" if detail else ""))
+            # Le detail explique un ECHEC : l'afficher sur une regle qui passe
+            # rend le rapport contradictoire.
+            out.append(f"  {mark}{rule}" + (f"  -> {detail}" if detail and not ok else ""))
         return "\n".join(out)
 
 
@@ -518,8 +521,13 @@ def check_deck(path: Path) -> Report:
               f"{Brand.FOOTER:g})", not too_small, "; ".join(sorted(set(too_small))[:4]))
     rep.check("ponctuation : pas de cadratin ni demi-cadratin", not bad_punct,
               "; ".join(bad_punct[:3]))
-    rep.check("police Quicksand embarquee dans le fichier",
-              _fonts_embedded(path), "")
+    # PowerPoint pour le WEB (Teams, Office en ligne) refuse d'ouvrir un fichier
+    # contenant des polices embarquees. Etabli par bisection : toutes les
+    # variantes avec police echouent, toutes celles sans s'ouvrent. Un deck
+    # destine au partage doit donc en etre depourvu.
+    rep.check("ouvrable en PowerPoint web (aucune police embarquee)",
+              not _fonts_embedded(path),
+              "polices embarquees : le fichier ne s'ouvrira pas dans Teams")
     # Tampon de tracabilite : sans ce controle, il sauterait au premier refactor
     # du builder sans que personne ne le voie.
     stamp = docprops.read(str(path))
@@ -764,6 +772,26 @@ def main() -> int:
     else:
         targets = [Path(a) for a in args]
     reports = [check_deck(t) for t in targets]
+
+    # L'option d'embarquement doit rester fonctionnelle : un deck destine au
+    # client lourd, ou la fidelite typographique prime, peut la demander.
+    rep = Report(Path("option embed_fonts"))
+    try:
+        import json as _json
+        import tempfile
+        from oz_deck import build as _build
+        plan = {"embed_fonts": True,
+                "slides": [{"layout": "closing"}]}
+        with tempfile.NamedTemporaryFile(suffix=".pptx", delete=False) as tmp:
+            tmp_path = tmp.name
+        _build(_json.loads(_json.dumps(plan)), tmp_path)
+        rep.check("embed_fonts: true embarque bien Quicksand",
+                  _fonts_embedded(Path(tmp_path)),
+                  "l'option est sans effet")
+        os.unlink(tmp_path)
+    except Exception as exc:                      # noqa: BLE001
+        rep.check("embed_fonts: true embarque bien Quicksand", False, str(exc))
+    reports.append(rep)
 
     # Tokens de charte : l'instantane fige fait echouer toute derive silencieuse
     # d'un token de `Brand`. Une modification volontaire se valide en regenerant

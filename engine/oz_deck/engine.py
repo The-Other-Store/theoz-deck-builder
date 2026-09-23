@@ -1326,6 +1326,14 @@ def build(schema: dict, output_path: str, template: str | None = None) -> str:
     masque (fond blanc, bande orange, trait de titre, pied) et les titres vont
     dans les placeholders natifs. Sinon le moteur dessine tout (mode legacy),
     rendu identique.
+
+    Cle racine `embed_fonts` (defaut FAUX) : embarquer Quicksand dans le .pptx.
+    PowerPoint pour le WEB (Teams, Office en ligne) ne sait pas traiter les
+    polices embarquees et REFUSE D'OUVRIR un fichier qui en contient - verifie par
+    bisection : toutes nos variantes avec police echouent, toutes celles sans
+    s'ouvrent. Le defaut est donc l'ouvrabilite partout ; l'embarquement reste
+    disponible pour un deck distribue uniquement en client lourd, ou la fidelite
+    typographique prime.
     """
     if template:                                       # template explicite -> legacy
         tpl, master = template, False
@@ -1354,7 +1362,8 @@ def build(schema: dict, output_path: str, template: str | None = None) -> str:
         prs.save(output_path)
     finally:
         _RENDER["master"] = False
-    _embed_charter_font(output_path)
+    if schema.get("embed_fonts", False):
+        _embed_charter_font(output_path)
     _stamp_charter(output_path)
     return output_path
 
@@ -1380,7 +1389,9 @@ _FONT_DIR = os.path.join(_ASSETS_DIR, "fonts")
 def _embed_charter_font(output_path: str) -> None:
     """Embarque Quicksand (Regular + Bold) dans le .pptx si les fontes sont la.
 
-    Garantit la charte chez un destinataire qui n'a pas la police installee.
+    Garantit la charte chez un destinataire qui n'a pas la police installee, MAIS
+    rend le fichier inouvrable en PowerPoint web (voir `build`). N'est appele que
+    si le plan porte `"embed_fonts": true`.
     Silencieux si les .ttf sont absents : le deck reste valide."""
     reg = os.path.join(_FONT_DIR, "Quicksand-Regular.ttf")
     bold = os.path.join(_FONT_DIR, "Quicksand-Bold.ttf")

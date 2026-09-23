@@ -29,6 +29,8 @@ verifie les regles de la charte V2 :
 - images contenues dans la zone utile et ratio d'aspect preserve (une capture
   portrait est bridee par la HAUTEUR, sinon elle sort de la diapositive) ;
 - ponctuation : pas de cadratin ni de demi-cadratin ;
+- **ouvrable en PowerPoint web** : aucune police embarquee. Teams et Office en
+  ligne refusent d'ouvrir un fichier qui en contient ;
 - aucune ombre portee sur les formes ;
 - titres de slide au corps 28 ;
 - aucun texte sous le corps 12 (hors pied de page a 8) ;

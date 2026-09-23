@@ -49,7 +49,12 @@ une cote en dur ailleurs.
 - **Elements graphiques obligatoires** : bande orange de 0,5 cm calee sur le bord
   gauche de toutes les slides de contenu ; trait orange de 3 pt juste sous le titre.
 - **Police** : Quicksand (Google Fonts, OFL), Bold pour les titres et Regular pour le
-  corps, embarquee dans le .pptx (voir `fontembed.py`). Jamais de serif.
+  corps, declaree dans le theme et sur chaque run. Jamais de serif.
+- **Polices EMBARQUEES : desactivees par defaut.** PowerPoint pour le WEB (Teams,
+  Office en ligne) refuse d'ouvrir un fichier qui en contient. La cle racine
+  `embed_fonts: true` les reactive pour un deck distribue uniquement en client
+  lourd. Contrepartie : un destinataire sans Quicksand verra une substitution ;
+  leur installer la police (`oz_deck.fonts`) est la vraie parade.
 - **Echelle de slide** : titre de slide 28, couverture et chapitre 44, intitule de
   bloc 14, corps 14, texte dense 12, metrique KPI 48, libelle KPI 14, variation 12,
   phase de feuille de route 18, verbatim 28 (interlignage 1,5) et sa source 18,

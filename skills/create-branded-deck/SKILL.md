@@ -65,6 +65,11 @@ il compose un PLAN JSON leger, le moteur fait le rendu deterministe.
   (moutarde, citrouille, orange, cuivre, automne). Ne pas specifier de couleur.
 - **L'orange se merite** : c'est la couleur identitaire, elle ponctue. L'alerte,
   c'est le rubis.
+- **Ne PAS mettre `"embed_fonts": true`** sauf demande explicite de l'utilisateur.
+  PowerPoint pour le web (Teams, Office en ligne) REFUSE d'ouvrir un fichier
+  contenant des polices embarquees. Le defaut (faux) garantit l'ouvrabilite
+  partout. L'activer se justifie seulement pour un deck distribue uniquement en
+  client lourd, et il faut alors le DIRE a l'utilisateur.
 - **Monnaie** : toujours le symbole monetaire, jamais le code a trois lettres.
 - **Ne pas emettre** les champs listes dans `champs_sans_effet` (retour de
   `list_layouts`) : `subtitle` sur une slide de contenu, `kicker` / `client` /

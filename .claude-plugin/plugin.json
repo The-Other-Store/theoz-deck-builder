@@ -1,6 +1,6 @@
 {
   "name": "theoz-deck-builder",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "Genere des PowerPoint chartes The Oz (charte V2 : contenu sur fond blanc, slides evenementielles sur degrade) a partir d'un plan JSON, via un moteur deterministe expose en MCP. Egalement deployable en API AWS serverless.",
   "author": {
     "name": "The Oz"

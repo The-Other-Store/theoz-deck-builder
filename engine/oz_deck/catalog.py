@@ -67,6 +67,14 @@ DECK_SCHEMA = {
                   "description": "Obsolete : la charte V2 n'a qu'un systeme visuel "
                                  "(contenu blanc / evenementiel orange). Tolere pour "
                                  "les plans anterieurs."},
+        "embed_fonts": {"type": "boolean", "default": False,
+                        "description": "Embarquer Quicksand dans le .pptx. FAUX par "
+                                       "defaut : PowerPoint pour le WEB (Teams, Office "
+                                       "en ligne) refuse d'ouvrir un fichier contenant "
+                                       "des polices embarquees. Ne passer a true que "
+                                       "pour un deck distribue uniquement en client "
+                                       "lourd, ou la fidelite typographique prime sur "
+                                       "l'ouvrabilite."},
         "slides": {"type": "array", "minItems": 1, "items": {"$ref": "#/definitions/slide"}},
     },
     "definitions": {
@@ -139,6 +147,9 @@ def validate(schema: dict) -> list[dict]:
     errors = []
     if not isinstance(schema, dict):
         return [{"path": "$", "error": "le schema doit etre un objet JSON"}]
+    if "embed_fonts" in schema and not isinstance(schema["embed_fonts"], bool):
+        errors.append({"path": "embed_fonts",
+                       "error": "doit etre un booleen (true/false)"})
     if schema.get("theme") and schema["theme"] not in _LEGACY_THEMES:
         errors.append({"path": "theme", "error": "cle 'theme' obsolete (charte V2 : un seul "
                                                  f"systeme visuel) ; valeurs tolerees {sorted(_LEGACY_THEMES)}"})

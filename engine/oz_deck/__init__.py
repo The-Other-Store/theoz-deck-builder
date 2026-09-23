@@ -4,6 +4,6 @@ from .engine import build, resolve_images
 from .catalog import (validate, LAYOUT_CATALOG, DECK_SCHEMA, THEMES, TONES,
                       IGNORED_FIELDS)
 
-__version__ = "0.9.0"   # charte V2 + contrats pour consommateurs externes
+__version__ = "0.9.1"   # charte V2 + contrats pour consommateurs externes
 __all__ = ["build", "resolve_images", "validate", "LAYOUT_CATALOG", "DECK_SCHEMA",
            "THEMES", "TONES", "IGNORED_FIELDS", "CHARTE_VERSION"]
